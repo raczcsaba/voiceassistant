@@ -1,0 +1,22 @@
+# Core assistant (assistant.py, va/): macOS on Apple Silicon
+mlx>=0.32
+mlx-lm>=0.32
+parakeet-mlx>=0.5
+onnxruntime>=1.31        # Silero VAD
+piper-tts>=1.8
+sounddevice>=0.5
+soundfile>=0.14
+numpy>=2.0
+requests>=2.32           # Home Assistant REST
+
+# Home Assistant voice pipeline client and menu-bar app (ha_voice.py, voice_app.py)
+websockets>=15
+openwakeword>=0.6
+rumps>=0.4
+
+# Benchmarks and comparison backends (bench.py, eval_nlu.py, tts_bench.py)
+mlx-whisper>=0.4
+moonshine-voice>=0.1
+jiwer>=4.0
+openai>=3.0
+anthropic>=1.15

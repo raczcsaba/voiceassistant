@@ -1,0 +1,12 @@
+{
+  "lights": {"living_room": "light.living_room", "kitchen": "light.kitchen", "bedroom": "light.bedroom",
+             "bathroom": "light.bathroom", "kids_room": "light.kids_room", "hallway": "light.hallway", "garage": "light.garage"},
+  "climate": {"living_room": "climate.living_room", "bedroom": "climate.bedroom", "bathroom": "climate.bathroom",
+              "kitchen": "climate.kitchen", "kids_room": "climate.kids_room"},
+  "covers": {"living_room_blinds": "cover.living_room", "bedroom_blinds": "cover.bedroom", "garage_door": "cover.garage_door"},
+  "devices": {"coffee_maker": "switch.coffee_maker", "tv": "media_player.tv", "washing_machine": "switch.washing_machine",
+              "fan": "fan.bedroom", "front_door_lock": "lock.front_door"},
+  "scenes": {"movie_night": "scene.movie_night", "morning": "scene.morning", "good_night": "scene.good_night", "away": "scene.away"},
+  "sensors": {"kids_room": {"temperature": "sensor.kids_room_temperature", "humidity": "sensor.kids_room_humidity"},
+              "living_room": {"temperature": "sensor.living_room_temperature"}}
+}

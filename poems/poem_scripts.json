@@ -1,0 +1,128 @@
+{
+ "higgs_plain": [
+  {
+   "text": "Ady Endre: Párisban járt az Ősz.",
+   "after": 1.2
+  },
+  {
+   "text": "Párisba tegnap beszökött az Ősz. Szent Mihály útján suhant nesztelen, kánikulában, halk lombok alatt s találkozott velem.",
+   "after": 1.0
+  },
+  {
+   "text": "Ballagtam éppen a Szajna felé s égtek lelkemben kis rőzse-dalok: füstösek, furcsák, búsak, bíborak, arról, hogy meghalok.",
+   "after": 1.0
+  },
+  {
+   "text": "Elért az Ősz és súgott valamit, Szent Mihály útja beleremegett, züm, züm: röpködtek végig az úton tréfás falevelek.",
+   "after": 1.0
+  },
+  {
+   "text": "Egy perc: a Nyár meg sem hőkölt belé s Párisból az Ősz kacagva szaladt. Itt járt, s hogy itt járt, én tudom csupán nyögő lombok alatt.",
+   "after": 0.5
+  }
+ ],
+ "higgs_directed": [
+  {
+   "text": "<|prosody:speed_slow|><|prosody:pitch_low|>Ady Endre. <|prosody:pause|> Párisban járt az Ősz.",
+   "after": 1.8
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Párisba tegnap <|prosody:pause|> beszökött az Ősz.",
+   "after": 0.7
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Szent Mihály útján suhant nesztelen, kánikulában, halk lombok alatt <|prosody:pause|> s találkozott velem.",
+   "after": 1.6
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_slow|><|prosody:pitch_low|>Ballagtam éppen a Szajna felé, s égtek lelkemben kis rőzse-dalok:",
+   "after": 0.5
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_slow|><|prosody:expressive_high|>füstösek, <|prosody:pause|> furcsák, <|prosody:pause|> búsak, <|prosody:pause|> bíborak,",
+   "after": 0.9
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_very_slow|><|prosody:pitch_low|>arról, hogy meghalok.",
+   "after": 1.9
+  },
+  {
+   "text": "<|emotion:awe|><|prosody:speed_slow|><|prosody:pitch_low|>Elért az Ősz, <|prosody:pause|> és súgott valamit.",
+   "after": 0.6
+  },
+  {
+   "text": "<|emotion:awe|><|prosody:speed_slow|><|prosody:pitch_low|>Szent Mihály útja beleremegett.",
+   "after": 0.7
+  },
+  {
+   "text": "<|emotion:amusement|><|prosody:expressive_high|>Züm, züm: <|prosody:pause|> röpködtek végig az úton tréfás falevelek.",
+   "after": 1.6
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Egy perc: <|prosody:pause|> a Nyár meg sem hőkölt belé, s Párisból az Ősz kacagva szaladt.",
+   "after": 1.0
+  },
+  {
+   "text": "<|emotion:longing|><|prosody:speed_very_slow|><|prosody:pitch_low|>Itt járt, <|prosody:pause|> s hogy itt járt, <|prosody:pause|> én tudom csupán, <|prosody:long_pause|> nyögő lombok alatt.",
+   "after": 0.8
+  }
+ ],
+ "higgs_directed_v2": [
+  {
+   "text": "<|prosody:speed_slow|><|prosody:pitch_low|>Ady Endre.",
+   "after": 0.5
+  },
+  {
+   "text": "<|prosody:speed_slow|><|prosody:pitch_low|>Párisban járt az Ősz.",
+   "after": 1.8
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Párisba tegnap beszökött az Ősz.",
+   "after": 0.6
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Szent Mihály útján suhant nesztelen, kánikulában, halk lombok alatt",
+   "after": 0.35
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>s találkozott velem.",
+   "after": 1.6
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_slow|><|prosody:pitch_low|>Ballagtam éppen a Szajna felé, s égtek lelkemben kis rőzse-dalok:",
+   "after": 0.5
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_slow|><|prosody:expressive_high|>füstösek, furcsák, búsak, bíborak,",
+   "after": 0.8
+  },
+  {
+   "text": "<|emotion:sadness|><|prosody:speed_very_slow|><|prosody:pitch_low|>arról, hogy meghalok.",
+   "after": 1.9
+  },
+  {
+   "text": "<|emotion:awe|><|prosody:speed_slow|><|prosody:pitch_low|>Elért az Ősz, és súgott valamit.",
+   "after": 0.5
+  },
+  {
+   "text": "<|emotion:awe|><|prosody:speed_slow|><|prosody:pitch_low|>Szent Mihály útja beleremegett.",
+   "after": 0.6
+  },
+  {
+   "text": "<|emotion:amusement|><|prosody:expressive_high|>Züm, züm: röpködtek végig az úton tréfás falevelek.",
+   "after": 1.6
+  },
+  {
+   "text": "<|emotion:contemplation|><|prosody:speed_slow|><|prosody:pitch_low|>Egy perc: a Nyár meg sem hőkölt belé, s Párisból az Ősz kacagva szaladt.",
+   "after": 1.0
+  },
+  {
+   "text": "<|emotion:longing|><|prosody:speed_very_slow|><|prosody:pitch_low|>Itt járt, s hogy itt járt, én tudom csupán,",
+   "after": 0.9
+  },
+  {
+   "text": "<|emotion:longing|><|prosody:speed_very_slow|><|prosody:pitch_low|>nyögő lombok alatt.",
+   "after": 0.8
+  }
+ ]
+}

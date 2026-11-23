@@ -1,0 +1,4401 @@
+{
+ "lang": "en",
+ "audio": "audio/en/tts",
+ "stt": {
+  "parakeet-110m": {
+   "backend": "parakeet:parakeet-tdt_ctc-110m",
+   "load_s": 1.155365166021511,
+   "lat": {
+    "e01": 0.050665291491895914,
+    "e02": 0.04817931249272078,
+    "e03": 0.05542037496343255,
+    "e04": 0.05062637501396239,
+    "e05": 0.045820500468835235,
+    "e06": 0.03937943751225248,
+    "e07": 0.04750247951596975,
+    "e08": 0.05031089601106942,
+    "e09": 0.034345145511906594,
+    "e10": 0.03549670794745907,
+    "e11": 0.03485822898801416,
+    "e12": 0.033129645977169275,
+    "e13": 0.049987645994406193,
+    "e14": 0.06778702093288302,
+    "e15": 0.05385102052241564,
+    "e16": 0.04414010397158563
+   },
+   "hyp": {
+    "e01": "Turn on the living room lights.",
+    "e02": "Switch off the kitchen light.",
+    "e03": "the bedroom lamp to fifty percent.",
+    "e04": "Set the living room to twenty two degrees.",
+    "e05": "Close the bedroom blinds.",
+    "e06": "open the garage door",
+    "e07": "Start the coffee maker",
+    "e08": "What's the temperature in the kids' room?",
+    "e09": "Turn off all the lights.",
+    "e10": "Start movie night.",
+    "e11": "lock the front door",
+    "e12": "Turn off the TV.",
+    "e13": "Hallway light at twenty percent, please.",
+    "e14": "I'm cold. Heat the bathroom to twenty four degrees.",
+    "e15": "Kill the lights in the kitchen.",
+    "e16": "Open the living room blinds."
+   },
+   "wer": 0.011235955056179775
+  },
+  "moonshine-base": {
+   "backend": "moonshine:base",
+   "load_s": 0.5071061669150367,
+   "lat": {
+    "e01": 0.05153614602750167,
+    "e02": 0.04235877102473751,
+    "e03": 0.07025050005177036,
+    "e04": 0.07358635397395119,
+    "e05": 0.04999258299358189,
+    "e06": 0.04161670804023743,
+    "e07": 0.041539687546901405,
+    "e08": 0.07541427097748965,
+    "e09": 0.04246243799570948,
+    "e10": 0.03833304200088605,
+    "e11": 0.0330214379937388,
+    "e12": 0.04133162496145815,
+    "e13": 0.07013518700841814,
+    "e14": 0.10265539604006335,
+    "e15": 0.0492025000276044,
+    "e16": 0.05086889601079747
+   },
+   "hyp": {
+    "e01": "Turn on the living room lights.",
+    "e02": "Switch off the kitchen light",
+    "e03": "Dim the bedroom lamp to 50%.",
+    "e04": "Set the living room to 22 degrees.",
+    "e05": "Close the bedroom blinds.",
+    "e06": "Open the garage door.",
+    "e07": "Start the coffee maker",
+    "e08": "What's the temperature in the kids room?",
+    "e09": "Turn off all the lights.",
+    "e10": "Start movie night.",
+    "e11": "Lock the front door",
+    "e12": "Turn off the TB.",
+    "e13": "Hallway light a 20% please.",
+    "e14": "I'm cold, heat the bathroom to 24 degrees.",
+    "e15": "Kill the lights in the kitchen.",
+    "e16": "Open the living room blinds."
+   },
+   "wer": 0.11235955056179775
+  }
+ },
+ "llm": {
+  "functiongemma-270m": {
+   "backend": "ollama:functiongemma:270m",
+   "load_s": 2.1783523749327287,
+   "mem_gb": 0.314918828,
+   "ref": {
+    "e01": {
+     "lat": 0.7227842289139517,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " living room",
+        "temperature": 20
+       }
+      }
+     ],
+     "text": " call:control_light{action: turn lights on,brightness:40}<end_function_call> call:control_device{device: living room light,action: turn light on}<end_function_call> call:get_state{attribute: temperature,target: 20%}<end_function_call> men: Turn on the living room"
+    },
+    "e02": {
+     "lat": 0.7277798539726064,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " kitchen",
+        "temperature": 0
+       }
+      }
+     ],
+     "text": " call:activate_scene{scene: kitchen}<end_function_call> call:get_state{attribute: brightness,target: 100%}<end_function_call> call:set_climate{room: kitchen,temperature:27, room: kitchen}<end_function_call> call:get_state{attribute: humidity,target:"
+    },
+    "e03": {
+     "lat": 0.7242891250061803,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " bedroom",
+        "temperature": 30
+       }
+      },
+      {
+       "name": "get_state",
+       "args": {
+        "attribute": " target",
+        "target": " baby_bedroom"
+       }
+      }
+     ],
+     "text": " call:control_device{device: lamp,action: turn on/off}<end_function_call> call:activate_scene{scene: bedroom}<end_function_call> call:get_state{attribute: humidity,target: indoor_"
+    },
+    "e04": {
+     "lat": 0.734808333509136,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " living room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": " call:activate_scene{scene: living room}<end_function_call> call:get_state{attribute: target,target: living room}<end_function_call> call:get_state{attribute: humidity,target: living room}<end_function_call> call:get_state{attribute: power,target: living room"
+    },
+    "e05": {
+     "lat": 0.7381096669705585,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " bedroom",
+        "temperature": 0
+       }
+      }
+     ],
+     "text": " call:activate_scene{scene: bedroom}<end_function_call> call:get_state{attribute: temperature,target: bedroom}<end_function_call> call:get_state{attribute: humidity,target: bedroom}<end_function_call> call:get_state{attribute: target,target: bedroom}<end_function_call> call:activate"
+    },
+    "e06": {
+     "lat": 0.7249081245390698,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_door",
+       "args": {
+        "action": " open",
+        "device": " garage door "
+       }
+      },
+      {
+       "name": "control_device",
+       "args": {
+        "action": " turn on/off",
+        "device": " key light or light switch"
+       }
+      },
+      {
+       "name": "control_device",
+       "args": {
+        "action": " lock/unlock front door",
+        "device": " front door or key light"
+       }
+      }
+     ],
+     "text": " model\n model\n model\n"
+    },
+    "e07": {
+     "lat": 0.726454270479735,
+     "ok": false,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "attribute": " water_level",
+        "target": " coffee_maker"
+       }
+      }
+     ],
+     "text": " model:get_state{}<end_function_call> me:start_the_coffee_maker{}<end_function_call> model:get_state{attribute: water_level,target: coffee_maker}<end_function_call> me:start_the_coffee_maker{}<end_function_call> me:get_state{}<end_function_call> me:start_the_coffee_maker{}<end_function_call>"
+    },
+    "e08": {
+     "lat": 0.11469183349981904,
+     "ok": false,
+     "calls": [],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.7250816664891317,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {}
+      },
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " bedroom",
+        "temperature": 20
+       }
+      },
+      {
+       "name": "control_device",
+       "args": {
+        "device": " TV",
+        "action": " turn on"
+       }
+      },
+      {
+       "name": "control_device",
+       "args": {
+        "device": " washing machine",
+        "action": " lock or unlock front door"
+       }
+      }
+     ],
+     "text": " model\n model\n model\n model\n"
+    },
+    "e10": {
+     "lat": 0.15100474999053404,
+     "ok": false,
+     "calls": [],
+     "text": "I can help with movie night! What kind of movie are you in the mood for?"
+    },
+    "e11": {
+     "lat": 0.04375024954788387,
+     "ok": false,
+     "calls": [],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.7254933959920891,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " TV",
+        "temperature": 0
+       }
+      }
+     ],
+     "text": " call:activate_scene{scene: TV player}<end_function_call> call:get_state{attribute: brightness,target: 100%}<end_function_call> call:get_state{attribute: humidity,target: 0%}<end_function_call> call:activate_scene{scene: TV player}<end_function_call> call"
+    },
+    "e13": {
+     "lat": 0.7246091665001586,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " hallway",
+        "temperature": 20
+       }
+      }
+     ],
+     "text": " call:control_light{brightness:100,room: hallway,action: turn lights on or off}<end_function_call> call:control_device{device: tv,action: turn a device on or off}<end_function_call> call:get_state{attribute: temperature,target: hallway, room or device id"
+    },
+    "e14": {
+     "lat": 0.32205131300725043,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I cannot assist with this request. My current capabilities are limited to controlling smart home devices like lights, climate, and cover. I cannot provide personalized energy or heating advice."
+    },
+    "e15": {
+     "lat": 0.30466829147189856,
+     "ok": false,
+     "calls": [],
+     "text": "I cannot assist with this request. My current capabilities are limited to controlling smart home devices like lights, climate, and door locks. I cannot interact with kitchen appliances or access sensitive operational data."
+    },
+    "e16": {
+     "lat": 0.7246618124772795,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": " living room",
+        "temperature": 20
+       }
+      }
+     ],
+     "text": " call:activate_scene{scene: living room}<end_function_call> call:get_state{attribute: temperature,target: adults_room, child_room}<end_function_call> men's watch\n"
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.7379250840749592,
+      "stt": 0.050665291491895914,
+      "ok": false
+     },
+     "e02": {
+      "llm": 0.7342127909651026,
+      "stt": 0.04817931249272078,
+      "ok": false
+     },
+     "e03": {
+      "llm": 0.15731004206463695,
+      "stt": 0.05542037496343255,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.7454013749957085,
+      "stt": 0.05062637501396239,
+      "ok": false
+     },
+     "e05": {
+      "llm": 0.7489537911023945,
+      "stt": 0.045820500468835235,
+      "ok": false
+     },
+     "e06": {
+      "llm": 0.7309839579975232,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.732018000097014,
+      "stt": 0.04750247951596975,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.13854349998291582,
+      "stt": 0.05031089601106942,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.7348967910511419,
+      "stt": 0.034345145511906594,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.15366537496447563,
+      "stt": 0.03549670794745907,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.7523723330814391,
+      "stt": 0.03485822898801416,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.7342881249496713,
+      "stt": 0.033129645977169275,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.7363241671118885,
+      "stt": 0.049987645994406193,
+      "ok": false
+     },
+     "e14": {
+      "llm": 0.3897754580248147,
+      "stt": 0.06778702093288302,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.3151417499175295,
+      "stt": 0.05385102052241564,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.7336861250223592,
+      "stt": 0.04414010397158563,
+      "ok": false
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.7336915830383077,
+      "stt": 0.05153614602750167,
+      "ok": false
+     },
+     "e02": {
+      "llm": 0.7291626250371337,
+      "stt": 0.04235877102473751,
+      "ok": false
+     },
+     "e03": {
+      "llm": 0.737254915991798,
+      "stt": 0.07025050005177036,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.7376813340233639,
+      "stt": 0.07358635397395119,
+      "ok": false
+     },
+     "e05": {
+      "llm": 0.735660000005737,
+      "stt": 0.04999258299358189,
+      "ok": false
+     },
+     "e06": {
+      "llm": 0.7350535419536754,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.7290034999605268,
+      "stt": 0.041539687546901405,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.12480424996465445,
+      "stt": 0.07541427097748965,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.7312120000133291,
+      "stt": 0.04246243799570948,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.15420874999836087,
+      "stt": 0.03833304200088605,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.3035622499883175,
+      "stt": 0.0330214379937388,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.7335221250541508,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.7353442501043901,
+      "stt": 0.07013518700841814,
+      "ok": false
+     },
+     "e14": {
+      "llm": 0.34167495800647885,
+      "stt": 0.10265539604006335,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.31481470889411867,
+      "stt": 0.0492025000276044,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.7330325419316068,
+      "stt": 0.05086889601079747,
+      "ok": false
+     }
+    }
+   }
+  },
+  "functiongemma-270m-json": {
+   "backend": "ollama-json:functiongemma:270m",
+   "load_s": 1.3428601250052452,
+   "mem_gb": 0.314918828,
+   "ref": {
+    "e01": {
+     "lat": 0.4854971045278944,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.46902722952654585,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.25481487496290356,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bedroom",
+        "temperature": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.5060753329889849,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.31576579151442274,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.48486547952052206,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "garage",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.3909844580339268,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.25992877047974616,
+     "ok": false,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "bedroom",
+        "attribute": "humidity"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.5354335624724627,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.28089254145743325,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bedroom",
+        "temperature": 21
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.49105941655579954,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "unlock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.5431373544852249,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.24979424953926355,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.2626279585529119,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bedroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.2938421875005588,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "on",
+        "brightness": 0
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.5176343329949304,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.48293962492607534,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.46821349998936057,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.2837857500417158,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.5115516668884084,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.30576699995435774,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.5552482500206679,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.27648899995256215,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.261339292046614,
+      "stt": 0.05031089601106942,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.5604672089684755,
+      "stt": 0.034345145511906594,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.3101310409838334,
+      "stt": 0.03549670794745907,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.48241275001782924,
+      "stt": 0.03485822898801416,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.5868328750366345,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.30455754208378494,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.2545990829821676,
+      "stt": 0.06778702093288302,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.30705187493003905,
+      "stt": 0.05385102052241564,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.5380142090143636,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.4808145839488134,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.5156647500116378,
+      "stt": 0.04235877102473751,
+      "ok": false
+     },
+     "e03": {
+      "llm": 0.28869925008621067,
+      "stt": 0.07025050005177036,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.5129414589609951,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.3214529169490561,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.5062780000735074,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.30105120805092156,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.2675944169750437,
+      "stt": 0.07541427097748965,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.526885874918662,
+      "stt": 0.04246243799570948,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.2925715839955956,
+      "stt": 0.03833304200088605,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.5020217500859872,
+      "stt": 0.0330214379937388,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.26452637498732656,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.250734333996661,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.2593373329145834,
+      "stt": 0.10265539604006335,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.30891233403235674,
+      "stt": 0.0492025000276044,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.5803610420553014,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "granite4-350m": {
+   "backend": "ollama:granite4:350m",
+   "load_s": 1.7824790000449866,
+   "mem_gb": 0.759179509,
+   "ref": {
+    "e01": {
+     "lat": 0.2932035004487261,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.28811716695781797,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.288903187494725,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.2991996459895745,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "temperature": 22,
+        "room": "living_room"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.30852774949744344,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.2787782915402204,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "action": "open",
+        "device": "garage_door"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.2578632505610585,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.28928743745200336,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "attribute": "temperature",
+        "target": "kids_room"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.27788470848463476,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.23629164550220594,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.2869069370208308,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "action": "lock",
+        "device": "front_door"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.23823562497273088,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "action": "off",
+        "device": "tv"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.29868868697667494,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "hallway",
+        "temperature": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.3016216460382566,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.28704029199434444,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.24941927043255419,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.299312875024043,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.3047784579684958,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.3119372500805184,
+      "stt": 0.05542037496343255,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.30516645894385874,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.31026337505318224,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.30474212497938424,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.24989266705233604,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.2937631659442559,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.28259483294095844,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.24324595904909074,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.2896893339930102,
+      "stt": 0.03485822898801416,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.24250008398666978,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.2947744589764625,
+      "stt": 0.049987645994406193,
+      "ok": false
+     },
+     "e14": {
+      "llm": 0.30986908404156566,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.2936885830713436,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.25129679101519287,
+      "stt": 0.04414010397158563,
+      "ok": false
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.2965047500329092,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.2907394580543041,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.3061255409847945,
+      "stt": 0.07025050005177036,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.3044869170989841,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.31454437493812293,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.3020375419873744,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.2520692499820143,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.29424470802769065,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.2828458339208737,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.24275537498760968,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.2962124580517411,
+      "stt": 0.0330214379937388,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.2914760420098901,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.30531012499704957,
+      "stt": 0.07013518700841814,
+      "ok": false
+     },
+     "e14": {
+      "llm": 0.3124637500150129,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.2954306249739602,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.251214416930452,
+      "stt": 0.05086889601079747,
+      "ok": false
+     }
+    }
+   }
+  },
+  "granite4-350m-json": {
+   "backend": "ollama-json:granite4:350m",
+   "load_s": 0.9528496250277385,
+   "mem_gb": 0.759179509,
+   "ref": {
+    "e01": {
+     "lat": 0.2526184580055997,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.2498679374693893,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.2532641040161252,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.2627383744693361,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.27943585452158004,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.26991879200795665,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "garage_door",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.2522784164757468,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.25283712544478476,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.24221985402982682,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.2600751245045103,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.2668197505408898,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.2408280415693298,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.2526623750454746,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.2640583335305564,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.2521118755103089,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.2800285204430111,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.2562185419956222,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.2554070419864729,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.2659989590756595,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.27058908296748996,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.2796102090505883,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.27304258302319795,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.25406462501268834,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.26083445793483406,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.24569266696926206,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.26715600001625717,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.27296304097399116,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.24697895802091807,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.2905281250132248,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.27482879196759313,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.2597654579440132,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.28550095797982067,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.2616166661027819,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.25764445902314037,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.28631533309817314,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.2712130839936435,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.2960487080272287,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.2942764579784125,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.27381437504664063,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.2882108330959454,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.2676316249417141,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.29155479196924716,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.30519562505651265,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.27783341705799103,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.2883674169424921,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.296239500050433,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.2841080410871655,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.30364462500438094,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "lfm2-350m-json": {
+   "backend": "ollama-json:hf.co/LiquidAI/LFM2-350M-GGUF:Q8_0",
+   "load_s": 1.4695783749921247,
+   "mem_gb": 0.431216394,
+   "ref": {
+    "e01": {
+     "lat": 0.23650710348738357,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on",
+        "brightness": 0
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.23604414600413293,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.25903720798669383,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom_blinds",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.23913610400632024,
+     "ok": false,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.2501136044738814,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.2458264789893292,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "garage",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.2464697085088119,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "washing_machine",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.2777077914797701,
+     "ok": false,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "bedroom",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.28326497896341607,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.277886854019016,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.24347968702204525,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "unlock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.2246647920110263,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.23393820849014446,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.29901762498775497,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bathroom",
+        "action": "on",
+        "brightness": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.276496562466491,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.2570665004896,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.298351833014749,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.41714508400764316,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.32542720902711153,
+      "stt": 0.05542037496343255,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.29790687502827495,
+      "stt": 0.05062637501396239,
+      "ok": false
+     },
+     "e05": {
+      "llm": 0.31862675002776086,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.31411708309315145,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.3393873750464991,
+      "stt": 0.04750247951596975,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.34418541693594307,
+      "stt": 0.05031089601106942,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.33997137495316565,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.3686975829768926,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.3084146250039339,
+      "stt": 0.03485822898801416,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.2822832081001252,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.28999575006309897,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.3703373749740422,
+      "stt": 0.06778702093288302,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.3379672080045566,
+      "stt": 0.05385102052241564,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.31638279103208333,
+      "stt": 0.04414010397158563,
+      "ok": false
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.2972554999869317,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.294661832973361,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.3223385000601411,
+      "stt": 0.07025050005177036,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.2941948330262676,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.31124354200437665,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.3092534589814022,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.30585383297875524,
+      "stt": 0.041539687546901405,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.3330000409623608,
+      "stt": 0.07541427097748965,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.3434339580126107,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.3670080420561135,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.3053248750511557,
+      "stt": 0.0330214379937388,
+      "ok": false
+     },
+     "e12": {
+      "llm": 0.2962632920825854,
+      "stt": 0.04133162496145815,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.29589412501081824,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.36500454193446785,
+      "stt": 0.10265539604006335,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.3458689999533817,
+      "stt": 0.0492025000276044,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.3299445000011474,
+      "stt": 0.05086889601079747,
+      "ok": false
+     }
+    }
+   }
+  },
+  "lfm2.5-1.2b": {
+   "backend": "ollama:hf.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
+   "load_s": 3.0299192500533536,
+   "mem_gb": 0.81548804,
+   "ref": {
+    "e01": {
+     "lat": 0.44991881254827604,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.8047266249777749,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't turn off the kitchen light. Based on the available API, I can control lights in the living room, kitchen, bedroom, bathroom, kids room, hallway, garage, or set a scene, but not specifically the kitchen light."
+    },
+    "e03": {
+     "lat": 0.7139024374773726,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't adjust the bedroom lamp's brightness. Based on the available API, I can control lights in rooms like the bedroom, but only turn them on or off, not set specific brightness levels."
+    },
+    "e04": {
+     "lat": 0.43773945851717144,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.46788656298303977,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.44618593697668985,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "garage_door",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.8109488334739581,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't start the coffee maker. Based on the available API, I can control lights, set climate, manage blinds/garage door, and activate scenes, but I don't have the capability to operate appliances like a coffee maker."
+    },
+    "e08": {
+     "lat": 0.4443523330264725,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.7544378330348991,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't turn off all the lights at once. The available functions allow me to control lights in one room at a time, but not multiple rooms simultaneously. Please let me know which room you'd like to control."
+    },
+    "e10": {
+     "lat": 0.43134702049428597,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.7462441254756413,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't lock the front door. Based on the available API, I can control lights, set climate, manage blinds/garage door, and activate scenes, but locking the door is not supported."
+    },
+    "e12": {
+     "lat": 0.8313068749848753,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't turn off the TV. Based on the available API, I can control lights, adjust climate, manage blinds/garage door, and lock/unlock the front door, but I don't have the ability to control TVs."
+    },
+    "e13": {
+     "lat": 0.63546616648091,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't adjust the hallway light to 20% brightness. The available options let me turn the light on or off, but not set specific brightness levels."
+    },
+    "e14": {
+     "lat": 0.44407575041987,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.9110093955532648,
+     "ok": false,
+     "calls": [],
+     "text": "I'm sorry, but I can't turn off the lights in the kitchen. Based on the available API, I can control lights in the living room, kitchen, bedroom, bathroom, kids room, hallway, garage, or set a climate in those rooms. Let me know if you'd like help with any of those."
+    },
+    "e16": {
+     "lat": 0.47276410402264446,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.6660979998996481,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 1.0285264590056613,
+      "stt": 0.04817931249272078,
+      "ok": false
+     },
+     "e03": {
+      "llm": 1.1015042919898406,
+      "stt": 0.05542037496343255,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.6579964580014348,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.6935035829665139,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6672409160528332,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 1.022325958008878,
+      "stt": 0.04750247951596975,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.6673601659713313,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.9597000419162214,
+      "stt": 0.034345145511906594,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.6496584999840707,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.8336918340064585,
+      "stt": 0.03485822898801416,
+      "ok": false
+     },
+     "e12": {
+      "llm": 1.0270919169997796,
+      "stt": 0.033129645977169275,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.8433401670772582,
+      "stt": 0.049987645994406193,
+      "ok": false
+     },
+     "e14": {
+      "llm": 0.6483379169367254,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 1.1271804579300806,
+      "stt": 0.05385102052241564,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.6937867080559954,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.6683514999458566,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.6620494580129161,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.9346308750100434,
+      "stt": 0.07025050005177036,
+      "ok": false
+     },
+     "e04": {
+      "llm": 0.6571619580499828,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.6947847090195864,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6739354999735951,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 1.0190624580718577,
+      "stt": 0.041539687546901405,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.661251708981581,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.9724842080613598,
+      "stt": 0.04246243799570948,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.6540134589886293,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.9783075409941375,
+      "stt": 0.0330214379937388,
+      "ok": false
+     },
+     "e12": {
+      "llm": 1.0242420829599723,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.6865380420349538,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.6531393750337884,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 1.132758583058603,
+      "stt": 0.0492025000276044,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.6944155839737505,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "lfm2.5-1.2b-json": {
+   "backend": "ollama-json:hf.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
+   "load_s": 1.410988541902043,
+   "mem_gb": 0.81548804,
+   "ref": {
+    "e01": {
+     "lat": 0.6065277084708214,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.6180242499685846,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.6221935005160049,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.6312758959829807,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.6729237704421394,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.6362152294605039,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "garage_door",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.6944261459866539,
+     "ok": false,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "coffee_maker"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.6549674164853059,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.6085659164818935,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.6445198124856688,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.6300917920307256,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.6099456244846806,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.6043366664671339,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.6534540214925073,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.6355365204508416,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.686930708005093,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.8341826250543818,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.841602333006449,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.8424188329372555,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.8443999589653686,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.883830500068143,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.8392561660148203,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.8918012920767069,
+      "stt": 0.04750247951596975,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.870710292016156,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.8433602500008419,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.8820385000435635,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.8504900829866529,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.8486502090236172,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.8351507909828797,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8460134170018137,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.8521475000306964,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.904435082920827,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.8262393749319017,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.8297590829897672,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.8210396250942722,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.8501237910240889,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.8895421250490472,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.8559541249414906,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.8935894588939846,
+      "stt": 0.041539687546901405,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.8788479160284624,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.8446623330237344,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.8794863750226796,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.8436333748977631,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.828721916070208,
+      "stt": 0.04133162496145815,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.8397994170663878,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8674602500395849,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.8682694159215316,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.9270210829563439,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "lfm2-1.2b-tool": {
+   "backend": "ollama:hf.co/LiquidAI/LFM2-1.2B-Tool-GGUF:Q4_K_M",
+   "load_s": 2.2159070830093697,
+   "mem_gb": 0.81548804,
+   "ref": {
+    "e01": {
+     "lat": 0.4439439795096405,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.43073447950882837,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.46509918745141476,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.4363232915638946,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.4592763955006376,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.43142370850546286,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "garage",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.4526286455220543,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.44267825002316386,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.4228306870209053,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.4573542090365663,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.4395304375211708,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.43172470905119553,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.44685368752107024,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.4418939169845544,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.4202608749619685,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.48026199999731034,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.6676766669843346,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.6562138330191374,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.6898632500087842,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.6522641670890152,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.6856221249327064,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6542616660008207,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.6743036670377478,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.6733808330027387,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.6490864999359474,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.6922012499999255,
+      "stt": 0.03549670794745907,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.6639605830423534,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.6631502080708742,
+      "stt": 0.033129645977169275,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.6818262910237536,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.6561781249474734,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.65412474994082,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.6958801250439137,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.6669789999723434,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.6566860829479992,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.6889855420449749,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.6555335839511827,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.6891941659851,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6505076249595731,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.6746664999518543,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.6664502079365775,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.6397911659441888,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 0.6794434579787776,
+      "stt": 0.03833304200088605,
+      "ok": false
+     },
+     "e11": {
+      "llm": 0.6529975830344483,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 1.0130896249320358,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.6639222910162061,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.6438034999882802,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.6547320830868557,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.6966300000203773,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "lfm2-1.2b-tool-json": {
+   "backend": "ollama-json:hf.co/LiquidAI/LFM2-1.2B-Tool-GGUF:Q4_K_M",
+   "load_s": 1.4235837090527639,
+   "mem_gb": 0.81548804,
+   "ref": {
+    "e01": {
+     "lat": 0.6283313745516352,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.6142135625123046,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.6510305005358532,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.6403258124482818,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.6382566255051643,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.5941227915463969,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "garage",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.6386071250308305,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "set"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.5657217290136032,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "kids_room",
+        "action": "get"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.5898284795111977,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.6396413955371827,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.6289312710287049,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.5871270835050382,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "set"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.6314832915086299,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.6311898960266262,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.609560833487194,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.6716191045125015,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.8471844999585301,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.838403083034791,
+      "stt": 0.04817931249272078,
+      "ok": false
+     },
+     "e03": {
+      "llm": 0.8807177079143003,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.8864825000055134,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.8770141669083387,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.8553890419425443,
+      "stt": 0.03937943751225248,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.8753157500177622,
+      "stt": 0.04750247951596975,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.8091260829241946,
+      "stt": 0.05031089601106942,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.8199320000130683,
+      "stt": 0.034345145511906594,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.8867154169129208,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.8569680000655353,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.8234230000525713,
+      "stt": 0.033129645977169275,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.8599717919714749,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8825207919580862,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 0.8466159160016105,
+      "stt": 0.05385102052241564,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.8923313330160454,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.854111541993916,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.8621903749881312,
+      "stt": 0.04235877102473751,
+      "ok": false
+     },
+     "e03": {
+      "llm": 0.8774805419379845,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.8781765840249136,
+      "stt": 0.07358635397395119,
+      "ok": false
+     },
+     "e05": {
+      "llm": 0.864415374933742,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.824328082962893,
+      "stt": 0.04161670804023743,
+      "ok": false
+     },
+     "e07": {
+      "llm": 0.8647762920008972,
+      "stt": 0.041539687546901405,
+      "ok": false
+     },
+     "e08": {
+      "llm": 0.8022498749196529,
+      "stt": 0.07541427097748965,
+      "ok": false
+     },
+     "e09": {
+      "llm": 0.8217715420760214,
+      "stt": 0.04246243799570948,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.8793428749777377,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.8577759580221027,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.8585371660301462,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.8397515000542626,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8693498339271173,
+      "stt": 0.10265539604006335,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.8331470000557601,
+      "stt": 0.0492025000276044,
+      "ok": false
+     },
+     "e16": {
+      "llm": 0.8815112919546664,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "qwen3.5-0.8b": {
+   "backend": "ollama:qwen3.5:0.8b",
+   "load_s": 3.123053375049494,
+   "mem_gb": 1.276619072,
+   "ref": {
+    "e01": {
+     "lat": 0.9772657290450297,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 0.9654904584749602,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 0.8294478959869593,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 0.746093854540959,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 0.6687643129844218,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 0.6549436874920502,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "garage_door",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 0.6228192079579458,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 0.6057027294882573,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 0.4417358750361018,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 0.4977901669917628,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 0.655162729031872,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 0.6031641875160858,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 0.8180587914539501,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 0.8291787704802118,
+     "ok": false,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bathroom",
+        "action": "on",
+        "brightness": 100
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 0.6196530414745212,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 0.6485092709772289,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 0.6078871249919757,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.6123548749601468,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.8109424590365961,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.6081821670522913,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 0.6316976670641452,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6369440000271425,
+      "stt": 0.03937943751225248,
+      "ok": true
+     },
+     "e07": {
+      "llm": 0.6155010840157047,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.6071321669733152,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.43182816600892693,
+      "stt": 0.034345145511906594,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.4549219999462366,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.6349477500189096,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.6184387080138549,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 0.8965593749890104,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8901438750326633,
+      "stt": 0.06778702093288302,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.6429571249755099,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.667649291921407,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 0.6262672920711339,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 0.6474480420583859,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 0.838708958006464,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 0.8225103749427944,
+      "stt": 0.07358635397395119,
+      "ok": false
+     },
+     "e05": {
+      "llm": 0.6620548330247402,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 0.6469641670119017,
+      "stt": 0.04161670804023743,
+      "ok": true
+     },
+     "e07": {
+      "llm": 0.6204684999538586,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 0.5944357920670882,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 0.43972899997606874,
+      "stt": 0.04246243799570948,
+      "ok": false
+     },
+     "e10": {
+      "llm": 0.468537624925375,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 0.6391849999781698,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 0.6395368750672787,
+      "stt": 0.04133162496145815,
+      "ok": false
+     },
+     "e13": {
+      "llm": 0.8167555000400171,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 0.8475134159671143,
+      "stt": 0.10265539604006335,
+      "ok": false
+     },
+     "e15": {
+      "llm": 0.6144268750213087,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 0.6401748749194667,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  },
+  "qwen3.5-2b": {
+   "backend": "ollama:qwen3.5:2b",
+   "load_s": 8.793163583963178,
+   "mem_gb": 3.149963072,
+   "ref": {
+    "e01": {
+     "lat": 2.5826902499538846,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "living_room",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e02": {
+     "lat": 2.2228815619600937,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e03": {
+     "lat": 2.020921270479448,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "bedroom",
+        "action": "on",
+        "brightness": 50
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e04": {
+     "lat": 1.4050383329740725,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "living_room",
+        "temperature": 22
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e05": {
+     "lat": 1.7243215000489727,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "bedroom_blinds",
+        "action": "close"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e06": {
+     "lat": 1.5900330625008792,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "garage_door",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e07": {
+     "lat": 1.4108726665144786,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "coffee_maker",
+        "action": "on"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e08": {
+     "lat": 1.3867427909863181,
+     "ok": true,
+     "calls": [
+      {
+       "name": "get_state",
+       "args": {
+        "target": "kids_room",
+        "attribute": "temperature"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e09": {
+     "lat": 1.5886842295294628,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "all",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e10": {
+     "lat": 1.54671635403065,
+     "ok": true,
+     "calls": [
+      {
+       "name": "activate_scene",
+       "args": {
+        "scene": "movie_night"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e11": {
+     "lat": 1.4119465210824274,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "front_door_lock",
+        "action": "lock"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e12": {
+     "lat": 1.3939656664733775,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_device",
+       "args": {
+        "device": "tv",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e13": {
+     "lat": 1.7624266879283823,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "hallway",
+        "action": "on",
+        "brightness": 20
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e14": {
+     "lat": 1.418828833498992,
+     "ok": true,
+     "calls": [
+      {
+       "name": "set_climate",
+       "args": {
+        "room": "bathroom",
+        "temperature": 24
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e15": {
+     "lat": 1.346660083043389,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_light",
+       "args": {
+        "room": "kitchen",
+        "action": "off"
+       }
+      }
+     ],
+     "text": ""
+    },
+    "e16": {
+     "lat": 1.616880375542678,
+     "ok": true,
+     "calls": [
+      {
+       "name": "control_cover",
+       "args": {
+        "cover": "living_room_blinds",
+        "action": "open"
+       }
+      }
+     ],
+     "text": ""
+    }
+   },
+   "e2e": {
+    "parakeet-110m": {
+     "e01": {
+      "llm": 1.4051640830002725,
+      "stt": 0.050665291491895914,
+      "ok": true
+     },
+     "e02": {
+      "llm": 1.3818200409878045,
+      "stt": 0.04817931249272078,
+      "ok": true
+     },
+     "e03": {
+      "llm": 1.7635367920156568,
+      "stt": 0.05542037496343255,
+      "ok": true
+     },
+     "e04": {
+      "llm": 1.6965677910484374,
+      "stt": 0.05062637501396239,
+      "ok": true
+     },
+     "e05": {
+      "llm": 1.5113135420251638,
+      "stt": 0.045820500468835235,
+      "ok": true
+     },
+     "e06": {
+      "llm": 1.3963851659791544,
+      "stt": 0.03937943751225248,
+      "ok": true
+     },
+     "e07": {
+      "llm": 2.022472875076346,
+      "stt": 0.04750247951596975,
+      "ok": true
+     },
+     "e08": {
+      "llm": 3.212755542015657,
+      "stt": 0.05031089601106942,
+      "ok": true
+     },
+     "e09": {
+      "llm": 1.9409397080307826,
+      "stt": 0.034345145511906594,
+      "ok": true
+     },
+     "e10": {
+      "llm": 1.118091042037122,
+      "stt": 0.03549670794745907,
+      "ok": true
+     },
+     "e11": {
+      "llm": 1.57595183304511,
+      "stt": 0.03485822898801416,
+      "ok": true
+     },
+     "e12": {
+      "llm": 4.375830666045658,
+      "stt": 0.033129645977169275,
+      "ok": true
+     },
+     "e13": {
+      "llm": 3.290169749991037,
+      "stt": 0.049987645994406193,
+      "ok": true
+     },
+     "e14": {
+      "llm": 2.1120050840545446,
+      "stt": 0.06778702093288302,
+      "ok": true
+     },
+     "e15": {
+      "llm": 1.5314341660123318,
+      "stt": 0.05385102052241564,
+      "ok": true
+     },
+     "e16": {
+      "llm": 1.5169262499548495,
+      "stt": 0.04414010397158563,
+      "ok": true
+     }
+    },
+    "moonshine-base": {
+     "e01": {
+      "llm": 1.5178210409358144,
+      "stt": 0.05153614602750167,
+      "ok": true
+     },
+     "e02": {
+      "llm": 1.4734670839970931,
+      "stt": 0.04235877102473751,
+      "ok": true
+     },
+     "e03": {
+      "llm": 1.9122937909560278,
+      "stt": 0.07025050005177036,
+      "ok": true
+     },
+     "e04": {
+      "llm": 1.51080270903185,
+      "stt": 0.07358635397395119,
+      "ok": true
+     },
+     "e05": {
+      "llm": 1.5392685420811176,
+      "stt": 0.04999258299358189,
+      "ok": true
+     },
+     "e06": {
+      "llm": 1.5042502919677645,
+      "stt": 0.04161670804023743,
+      "ok": true
+     },
+     "e07": {
+      "llm": 1.4663254170445725,
+      "stt": 0.041539687546901405,
+      "ok": true
+     },
+     "e08": {
+      "llm": 1.511710749939084,
+      "stt": 0.07541427097748965,
+      "ok": true
+     },
+     "e09": {
+      "llm": 1.4495777919655666,
+      "stt": 0.04246243799570948,
+      "ok": true
+     },
+     "e10": {
+      "llm": 1.1700892080552876,
+      "stt": 0.03833304200088605,
+      "ok": true
+     },
+     "e11": {
+      "llm": 2.279988083988428,
+      "stt": 0.0330214379937388,
+      "ok": true
+     },
+     "e12": {
+      "llm": 1.6160173329990357,
+      "stt": 0.04133162496145815,
+      "ok": true
+     },
+     "e13": {
+      "llm": 1.9273745409445837,
+      "stt": 0.07013518700841814,
+      "ok": true
+     },
+     "e14": {
+      "llm": 1.6571806659922004,
+      "stt": 0.10265539604006335,
+      "ok": true
+     },
+     "e15": {
+      "llm": 2.6992962090298533,
+      "stt": 0.0492025000276044,
+      "ok": true
+     },
+     "e16": {
+      "llm": 1.9100086250109598,
+      "stt": 0.05086889601079747,
+      "ok": true
+     }
+    }
+   }
+  }
+ }
+}

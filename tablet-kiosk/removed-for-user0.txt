@@ -1,0 +1,5 @@
+com.miui.msa.global
+com.miui.analytics
+com.miui.bugreport
+com.xiaomi.discover
+com.miui.miservice

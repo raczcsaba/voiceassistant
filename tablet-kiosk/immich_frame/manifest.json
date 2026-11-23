@@ -1,0 +1,1 @@
+{"domain":"immich_frame","name":"Immich Frame","version":"1.0.0","documentation":"https://www.home-assistant.io/","codeowners":[],"dependencies":["http"],"requirements":[],"iot_class":"local_polling"}
