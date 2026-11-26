@@ -122,6 +122,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
 .head { display: flex; align-items: flex-start; gap: 6px; } .head .ti { flex: 1; min-width: 0; }
 .head button { display: flex; padding: 4px; --mdc-icon-size: 22px; opacity: .6; } .head button.on { opacity: 1; color: var(--accent); }
+.head button.busy { opacity: .3; pointer-events: none; } .head button.pop ha-icon { animation: pop .45s ease-out; }
+@keyframes pop { 40% { transform: scale(1.35); } }
+.sheet .pl .spin { margin: 18px auto; } .sheet .pl .empty { padding: 12px 4px; }
 .ctl .mode { --mdc-icon-size: 20px; opacity: .5; } .ctl .mode.on { opacity: 1; color: var(--accent); }
 /* Timeline and lyrics take the same space, so switching between them doesn't resize the card */
 .tl, .lyr { height: 38px; margin-top: 8px; overflow: hidden; }
@@ -762,7 +765,8 @@ class HomePanel extends HTMLElement {
         <div class="head"><div class="ti">
           <div class="title">${esc(hasMedia ? a.media_title : "Nothing playing")}</div>
           <div class="artist">${esc(hasMedia ? [a.media_artist, a.media_album_name].filter(Boolean).join(" \u00b7 ") : a.friendly_name)}</div></div>
-          ${hasMedia ? `<button class="${fav ? "on" : ""}" data-like aria-label="Like"><ha-icon icon="mdi:${fav ? "heart" : "heart-outline"}"></ha-icon></button>
+          ${hasMedia ? `<button class="${fav ? "on" : ""}${this._liking ? " busy" : ""}" data-like aria-label="Tetszik" title="Tetszik"><ha-icon icon="mdi:${fav ? "heart" : "heart-outline"}"></ha-icon></button>
+          <button data-save aria-label="Listába" title="Listába"><ha-icon icon="mdi:playlist-plus"></ha-icon></button>
           <button class="${this._lyricsOn ? "on" : ""}" data-lyrics aria-label="Lyrics"><ha-icon icon="mdi:microphone-variant"></ha-icon></button>` : ""}
         </div>
         <div class="ctl">
@@ -887,15 +891,56 @@ class HomePanel extends HTMLElement {
     this._tick();
   }
 
-  // MA's per-player button adds the playing song to the library favourites; HA has no way to remove one
-  _like() {
-    if (!this._track) return;
-    if (this._track.fav) return this._toast("Already in your favourites");
-    this._svc("button", "press", { entity_id: this._player.replace("media_player.", "button.") + "_favorite_current_song" });
-    this._track.fav = true;
-    delete this._cache[FAVOURITES];
-    this._toast("Added to favourites");
+  // The Claude worker favourites the playing song on Tidal (through voice_brain, which is HA-authenticated).
+  // If the worker can't be reached, MA's per-player button adds it to the library favourites instead.
+  async _like() {
+    const track = this._track;
+    if (!track || this._liking) return;
+    if (track.fav) return this._toast("Already in your favourites");
+    this._liking = true;
     this._draw();
+    let r = null;
+    try { r = await this._hass.callApi("POST", "voice_brain/like", { player: this._player }); } catch (e) { /* no voice_brain */ }
+    this._liking = false;
+    if (r?.ok || !r || r.reason === "unreachable") {
+      if (!r?.ok) this._svc("button", "press", { entity_id: this._player.replace("media_player.", "button.") + "_favorite_current_song" });
+      track.fav = true;
+      delete this._cache[FAVOURITES];
+      this._toast(r?.ok && r.say ? r.say : "Added to favourites");
+    } else this._toast(r.say || "Could not like it");
+    this._draw();
+    if (track.fav) this.shadowRoot.querySelector("[data-like]")?.classList.add("pop");
+  }
+
+  // Lists the playlists the worker can add to; tapping one adds the playing song
+  async _saveSheet() {
+    this._closeSheet();
+    const player = this._player;
+    const title = this._hass.states[player]?.attributes.media_title || "";
+    const bg = document.createElement("div");
+    bg.className = "sheet-bg";
+    bg.innerHTML = `<div class="sheet"><div class="h">Listába</div><div class="h2">${esc(title)}</div><div class="pl"><div class="spin"></div></div></div>`;
+    let lists = [];
+    bg.addEventListener("click", async (e) => {
+      if (e.target === bg) return this._closeSheet();
+      const i = e.composedPath().find((n) => n.dataset?.pl)?.dataset.pl;
+      if (i === undefined) return;
+      const name = lists[i].name;
+      this._closeSheet();
+      try {
+        const r = await this._hass.callApi("POST", "voice_brain/save", { playlist: name, player });
+        this._toast(r.say || (r.ok ? `Added to ${name}` : "Could not add it"));
+      } catch (err) { this._toast("Could not add it"); }
+    });
+    this.shadowRoot.append(bg);
+    this._sheetEl = bg;
+    let r = null;
+    try { r = await this._hass.callApi("GET", "voice_brain/playlists"); } catch (e) { /* shown below */ }
+    if (this._sheetEl !== bg) return;
+    lists = r?.playlists || [];
+    bg.querySelector(".pl").innerHTML = lists.length
+      ? lists.map((pl, i) => `<button data-pl="${i}"><ha-icon icon="mdi:playlist-music"></ha-icon>${esc(pl.name)}</button>`).join("")
+      : `<div class="empty">${esc(r?.say || (r ? "No playlists to add to" : "Could not load playlists"))}</div>`;
   }
 
   _seek(to) {
@@ -1064,6 +1109,7 @@ class HomePanel extends HTMLElement {
     else if ("shuffle" in d) this._svc("media_player", "shuffle_set", { entity_id: this._player, shuffle: !this._hass.states[this._player].attributes.shuffle });
     else if ("repeat" in d) this._svc("media_player", "repeat_set", { entity_id: this._player, repeat: REPEAT_NEXT[this._hass.states[this._player].attributes.repeat] || "all" });
     else if ("like" in d) this._like();
+    else if ("save" in d) this._saveSheet();
     else if ("lyrics" in d) {
       this._lyricsOn = !this._lyricsOn;
       localStorage.setItem(LYRICS_KEY, this._lyricsOn ? "1" : "0");

@@ -49,3 +49,14 @@ poems/dist/
 poems/listen/
 poems/share/
 tv_vibe/tv_vibe.json
+
+# voice_brain: pre-change snapshot of the HA files and the deployed (un-sanitized) card, local only
+voice_brain/orig/
+voice_brain/panel/
+
+# stt: generated prompt (personal library names), benchmark audio and results stay on the server
+stt_prompt.txt
+stt/bench/audio/
+stt/bench/results/
+stt/bench/real/
+.ks-src/

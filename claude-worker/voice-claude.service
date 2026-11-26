@@ -1,0 +1,15 @@
+[Unit]
+Description=Voice Claude worker (smart path of the Hungarian voice assistant)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/opt/voice/claude/app
+ExecStart=/opt/voice/claude/venv/bin/python -m voice_claude --config /opt/voice/claude/config.json
+Environment=PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8
+Restart=always
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

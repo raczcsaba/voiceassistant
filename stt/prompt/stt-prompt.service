@@ -1,0 +1,7 @@
+[Unit]
+Description=Refresh the Whisper vocabulary prompt in the voice LXC (artists and film titles from HA)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/stt-prompt/refresh-prompt.sh

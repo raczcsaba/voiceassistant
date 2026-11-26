@@ -158,6 +158,7 @@ These grew around the assistant and run on the same Home Assistant setup:
 |---|---|
 | `ha_voice.py`, `voice_app.py` | Client for Home Assistant's own Assist pipeline over the websocket API, with timings, and a macOS menu-bar app on top (wake word via openWakeWord). Set `HA_HOST` (default `homeassistant.local:8123`) and put a long-lived token in `~/.config/voice-test/ha-token` |
 | `tablet-kiosk/home-panel.js` | Lovelace custom card: music and TV now-playing, lights, desk monitor switching, Music Assistant / Jellyfin library browser and a daily poem. Entities are set in the card config (`players`, `lights`, `tv`, …; see the comment above `setConfig`) |
+| `voice_brain/custom_components/voice_brain/` | Home Assistant conversation agent for the Hungarian voice satellites: a small local model for quick device control, everything else handed to a Claude worker. See [Voice Brain routing](#voice-brain-routing) |
 | `tablet-kiosk/immich_frame/` | Small Home Assistant integration that proxies random Immich photos to the screensaver, so the card never sees the Immich API key |
 | `s20-kiosk/amoled-saver.js` | Screensaver card with ~40 clock, canvas and WebGL styles plus the Immich photo frame |
 | `s20-kiosk/adbkeeper/` | Tiny Android app (built without Gradle, `build.sh`) that keeps wireless ADB alive on a kiosk phone |
@@ -166,6 +167,147 @@ These grew around the assistant and run on the same Home Assistant setup:
 | `poems/higgs_poem.py`, `tts_*.py` | Experiments: reading the poems aloud with Higgs Audio TTS on a Linux GPU box (`AI_ROOT`) |
 | `tv_vibe/` | Generates a Home Assistant script that plays random calm YouTube videos on an Android TV over ADB (`TV_ADB_ENTITY`) |
 | `research_notes/`, `reports/` | Notes on Hungarian and code-switching speech recognition |
+| `stt/` | The satellites' speech-to-text server (Wyoming): Parakeet for English, a Hungarian Whisper for Hungarian, with a hallucination guard and a benchmark. See [Hungarian speech-to-text server](#hungarian-speech-to-text-server-stt) |
+
+## Voice Brain routing
+
+`voice_brain` is a custom conversation agent (`conversation.voice_brain`). Every transcript first goes to a local
+llama.cpp model (Qwen3-4B, `LLM_URL` in `conversation.py`) that returns `{"a": action, "d": device, "q": query, "n": number}`
+under a JSON schema; the prompt and schema live in `prompt.py`.
+
+**Local fast path** (answers in about 0.3 s from a fixed Hungarian template):
+`on` / `off` / `brightness`, TV on/off, `pause` / `resume` / `next` / `stop`, `volume_up` / `volume_down`,
+and films whose title matches the Jellyfin library with similarity ≥ 0.9 (original or Hungarian title, `titles.best`).
+
+**Quick worker actions** go to the worker's `/quick` or `/cancel` and speak its short reply:
+`like` ("ez tetszik", "lájkold", "kedvencekhez"), `save_to_playlist` with `q` = playlist ("mentsd el a rock listába"),
+and `cancel` ("Claude állj", "hagyd abba Claude", "mégse"; matched by a regex before the model, so it's instant).
+
+**Claude hand-off**: `music`, `music_only`, `none` (questions, mood queues, playlist building, recommendations) and
+uncertain films POST the *original* transcript to the worker's `/task` (2 s timeout) together with the
+`assist_satellite` entity it came from (`ConversationInput.satellite_id`, or the satellite entity on `device_id`).
+The agent says the worker's ack ("Szólok Claude-nak."); the worker then announces its status and answer on that satellite.
+If the local model itself doesn't answer, the transcript is handed off too.
+
+**Fallbacks** when the worker is unreachable or answers `accepted: false`: music and films say why (the worker's `say`,
+e.g. the budget message, or "Claude most nem elérhető.") and then do the old local thing (Music Assistant `play_media`,
+fuzzy Jellyfin title match). Anything else just says that.
+
+The worker URL is `WORKER_URL` at the top of `worker.py`; a config entry option `worker_url` overrides it.
+
+### Dashboard endpoints
+
+Authenticated Home Assistant views (`views.py`) forward to the worker, so the browser never talks to it directly.
+All answer HTTP 200 with the worker's JSON, or `{"ok": false, "reason": "unreachable", "say": ...}`.
+
+| Endpoint | Body | Worker call |
+|---|---|---|
+| `POST /api/voice_brain/like` | `{"player"?}` | `/quick` `like` |
+| `GET /api/voice_brain/playlists` | | `/quick` `list_playlists` → `playlists: [{name, uri, id}]` |
+| `POST /api/voice_brain/save` | `{"playlist", "player"?}` | `/quick` `save_to_playlist` |
+
+`tablet-kiosk/home-panel.js` uses them: the heart in the now-playing card likes the song through the worker
+(falling back to Music Assistant's favourite button if the worker is down), and the playlist button opens a picker
+of the worker's playlists. Both show the worker's `say` text as a toast.
+
+## Hungarian speech-to-text server (`stt/`)
+
+Home Assistant's `stt.parakeet_onnx` is a Wyoming server (`stt/stt_server.py`, port 10300) on the GPU box:
+
+- **English**: Parakeet TDT 0.6B v3 (int8 ONNX, CPU).
+- **Hungarian**: a Hungarian fine-tune of Whisper large-v3-turbo on `whisper-server` (whisper.cpp, Vulkan, `127.0.0.1:8090`).
+  Parakeet is the fallback.
+
+| Path | Deployed to |
+|---|---|
+| `stt/stt_server.py` | `/opt/voice/stt_server.py` |
+| `stt/systemd/voice-stt.service`, `voice-whisper.service` | `/etc/systemd/system/` |
+| `stt/bench/bench_stt.py` | run from `/opt/voice/stt-bench` |
+| `stt/prompt/` | not installed (see "Vocabulary prompt") |
+
+Settings are environment variables in `voice-stt.service`, and nothing secret lives in the code.
+
+### What changed (2026-11)
+
+- **Long clips no longer fail.**
+  - `whisper-server` ran with `-ac 400`, which limits the audio window to about 8 s. Longer commands lost their end, and a 10.5 s clip made the decoder fail. The client then hit its fixed 5 s timeout, and the Parakeet fallback ran only after that, for 6.2 s in total.
+  - The server now sends `audio_ctx` with each request: at least 1000 frames (20 s), more for longer clips (`WHISPER_CTX_MIN`, `WHISPER_CTX_PAD`).
+  - The timeout grows with the clip: 2 s + 0.6 × its length, at most 15 s.
+- **Faster fallback.**
+  - If whisper hasn't answered after 1 s (+0.05 s per audio second), Parakeet starts as well.
+  - After 2 s (+0.1 s per audio second), whichever answers first wins. A stuck GPU now costs about 2.6 s instead of 6+ s.
+  - A whisper error falls back at once.
+- **No language detection.** `verbose_json` replies used to run language detection, which cost about 150 ms. `no_language_probabilities` turns it off.
+- **Hallucination guard** (`STT_GUARD=1`): the server returns empty text, and HA's "no text recognised", instead of garbage.
+  - **Silence and noise.** Silero VAD (`/opt/voice/models/silero_vad.onnx`, about 15 ms per clip) runs before whisper. Clips with less than 0.2 s of speech never reach the GPU. whisper-server works one request at a time, and on silence it can loop for seconds.
+  - **Subtitle and outro phrases** ("Feliratozta", "Köszönöm a figyelmet", URLs…) are dropped.
+  - **Decoder loops** ("Az a szörnyet, a szörnyet, a szörnyet") are cut back to one copy. The reply is dropped if what remains is only a couple of words or there was hardly any speech.
+  - **Low confidence.** A reply is also dropped when whisper's `no_speech_prob` is high and its `avg_logprob` low.
+- **Onset in the log.** Every request logs its onset: the quiet time before the first loud frame. A value near 0 ms means the satellite already cut off the first word.
+- **Debug audio on request.** While `/opt/voice/stt-debug/` exists, the first 20 requests are saved there as WAV files. Delete the folder when you are done.
+
+### Benchmark
+
+`stt/bench/bench_stt.py` builds the test set with Piper (`hu_HU-anna-medium`, `hu_HU-imre-medium`, in a throwaway venv in `/opt/voice/stt-bench`):
+
+- 30 commands with English names written as a Hungarian would say them;
+- each command clean, with the first 150 ms of speech cut off, and with pink noise at 10 dB SNR;
+- 3 long clips of about 10 s;
+- 6 clips of silence or noise, where the right answer is empty.
+
+`--real DIR` runs the same three conditions on your own recordings (`phrases.tsv`).
+
+```bash
+cd /opt/voice/stt-bench
+/opt/voice/venv/bin/python src/bench/bench_stt.py gen
+/opt/voice/venv/bin/python src/bench/bench_stt.py wyoming 127.0.0.1:10300 --tag now
+/opt/voice/venv/bin/python src/bench/bench_stt.py whisper --audio-ctx 400 --no-prompt --tag ac400
+```
+
+End-to-end results through Wyoming, as HA calls it. TTS set: 60 clips per condition; real set: the owner's 24 recordings.
+
+| | before | after |
+|---|---|---|
+| TTS clean: WER / names / p50 latency | 35.4% / 8 of 40 / 302 ms | 32.2% / 10 of 40 / 448 ms |
+| TTS, 150 ms onset cut | 53.2% | 49.0% |
+| TTS + noise (10 dB) | 41.1% | 36.6% |
+| Long clips (~10 s): WER / max latency | 85.4% / 6.0 s (one timeout, decoder loops) | 12.5% / 1.17 s |
+| Silence/noise clips with text | 6 of 6 | 0 of 6 (18 ms) |
+| Real recordings: clean / cut / noise | 25.0 / 21.2 / 27.9% | 24.0 / 22.1 / 28.8% |
+| Whisper stuck (simulated) | 5 s + Parakeet | 2.6 s (3 s clip), 3.6 s (10 s clip) |
+
+Synthetic speech is cleaner and more regular than a kiosk microphone, so the absolute numbers are optimistic. Compare the rows with each other, not with real life.
+
+Audio window, whisper alone (TTS clean / cut / noise WER, p50):
+
+| Window | WER clean / cut / noise | p50 |
+|---|---|---|
+| 400 | 35.0 / 52.9 / 40.8% | ~300 ms |
+| 750 | 32.8 / 50.3 / 39.2% | 407 ms |
+| 1000 | 30.9 / 49.4 / 36.6% | 486 ms |
+| 1500 (full) | 31.5 / 46.5 / 37.9% | ~1 s |
+
+The 1000 floor costs about 150 ms. On the real recordings it made no difference. To go back to the old speed for short clips and still fix long ones, set `WHISPER_CTX_MIN=400`.
+
+### Vocabulary prompt (built, measured, not used)
+
+`stt/prompt/` builds a whisper `prompt` of about 200 tokens: a short Hungarian command sentence, then the household's film and series titles (foreign-sounding ones first) and its most-played and favourite artists.
+
+- `fetch_library.py` runs inside the HA container. It reads Music Assistant through HA's own config entry, plus `/config/voice_titles.json`, and prints names only.
+- `make_prompt.py` writes the prompt to `/opt/voice/stt_prompt.txt`.
+- `refresh-prompt.sh` with `stt-prompt.timer` would run all of this daily on the Proxmox host.
+
+The generated file holds personal library names, so it stays out of the repo.
+
+With the Hungarian fine-tune the prompt makes things much worse:
+
+| Prompt | WER |
+|---|---|
+| Full prompt | about 100%: the model answers just "D" |
+| 120-token prompt | 51% on TTS clean, against 31% without |
+| Even "Kapcsold fel a lámpát." | breaks some commands |
+
+The stock large-v3-turbo does use the prompt (names 14 of 40 instead of 9 of 40). But it is no better than the fine-tune without a prompt: real recordings 24.0% vs 24.0%, TTS noise 40.8% vs 36.6%. So the prompt is off. To try it, set `STT_PROMPT_FILE=/opt/voice/stt_prompt.txt`.
 
 ## License
 

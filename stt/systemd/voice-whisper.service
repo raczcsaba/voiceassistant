@@ -1,0 +1,13 @@
+[Unit]
+Description=Voice speech-to-text for Hungarian (tuned Whisper on the RX 6700, Vulkan)
+After=network.target
+
+[Service]
+# No -ac here: stt_server.py sends audio_ctx per request. The old -ac 400 (8 s) cut longer commands off
+# and made a 10.5 s clip fail to decode until the 5 s client timeout.
+ExecStart=/opt/voice/whisper.cpp/build/bin/whisper-server -m /opt/voice/whisper.cpp/models/hu-turbo-q5.bin --host 127.0.0.1 --port 8090 -t 4 -nt -l hu
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

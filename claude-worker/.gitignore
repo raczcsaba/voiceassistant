@@ -1,0 +1,4 @@
+# deployment-specific values and runtime data stay out of the public repo
+config.json
+data/
+*.jsonl

@@ -1,0 +1,97 @@
+{
+  "listen": {
+    "host": "0.0.0.0",
+    "port": 8099
+  },
+  "secrets_dir": "/opt/voice/claude",
+  "data_dir": "/opt/voice/claude/data",
+  "timezone": "Europe/Budapest",
+  "dry_run": false,
+  "home_assistant": {
+    "url": "http://HOME_ASSISTANT_HOST:8123",
+    "token_file": "ha.token",
+    "default_satellite": "assist_satellite.YOUR_SATELLITE",
+    "jellyfin_play_path": "/api/jellyfin_panel/play",
+    "jellyfin_play_device": "tv"
+  },
+  "music_assistant": {
+    "url": "ws://MUSIC_ASSISTANT_HOST:8095/ws",
+    "token_file": "ma.token",
+    "playlist_provider": "tidal--YOUR_INSTANCE_ID",
+    "default_player": "media_player.YOUR_DEFAULT_PLAYER",
+    "player_aliases": {
+      "media_player.YOUR_PLAYER": [
+        "alias one",
+        "alias two"
+      ]
+    },
+    "player_hint": "the user calls them Kitchen, Living room or \"everywhere\" (a group of both)."
+  },
+  "jellyfin": {
+    "url": "http://JELLYFIN_HOST:8096",
+    "key_file": "jellyfin.key",
+    "user": "YOUR_JELLYFIN_USER"
+  },
+  "anthropic": {
+    "key_file": "anthropic.key",
+    "model": "claude-sonnet-5-5",
+    "allowed_models": [
+      "claude-sonnet-5-5",
+      "claude-haiku-5-5",
+      "claude-opus-5-5"
+    ],
+    "effort": "low",
+    "max_tokens": 4096,
+    "web_search_tool": {
+      "default": "web_search_20260209",
+      "claude-haiku-5-5": "web_search_20250305"
+    },
+    "max_web_searches": 3,
+    "web_search_location": null
+  },
+  "limits": {
+    "max_turns": 12,
+    "max_seconds": 150,
+    "max_task_usd": 0.6,
+    "monthly_usd": 30.0
+  },
+  "status": {
+    "min_gap_s": 6,
+    "quiet_after_ack_s": 4,
+    "max_per_task": 4,
+    "idle_notice_s": 15,
+    "idle_text": "Még dolgozom rajta."
+  },
+  "catalogue": {
+    "refresh_hours": 6,
+    "max_artists": 600,
+    "max_tracks": 600
+  },
+  "pricing": {
+    "web_search_per_1000": 10.0,
+    "models": {
+      "claude-sonnet-5-5": {
+        "input": 2.0,
+        "cache_write_5m": 2.5,
+        "cache_write_1h": 4.0,
+        "cache_read": 0.1,
+        "output": 10.0
+      },
+      "claude-haiku-5-5": {
+        "input": 0.1,
+        "cache_write_5m": 0.125,
+        "cache_write_1h": 0.2,
+        "cache_read": 0.01,
+        "output": 0.5,
+        "note": "prompts up to 100k tokens; above that 0.50/0.625/1.00/0.05/2.50"
+      },
+      "claude-opus-5-5": {
+        "input": 4.0,
+        "cache_write_5m": 5.0,
+        "cache_write_1h": 8.0,
+        "cache_read": 0.2,
+        "output": 20.0
+      }
+    }
+  }
+}

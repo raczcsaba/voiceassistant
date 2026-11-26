@@ -1,0 +1,18 @@
+[Unit]
+Description=Voice speech-to-text (Wyoming: Parakeet for en, Hungarian Whisper for hu)
+After=network-online.target voice-whisper.service
+
+[Service]
+WorkingDirectory=/opt/voice
+ExecStart=/opt/voice/venv/bin/python /opt/voice/stt_server.py
+# Encoder window: at least 1000 frames (20 s), more for longer clips; see stt_server.audio_context
+Environment=WHISPER_AUDIO_CTX=auto WHISPER_CTX_MIN=1000 WHISPER_CTX_PAD=250
+# Vocabulary prompt: off (it hurt the Hungarian fine-tune in the benchmark). To try it:
+#Environment=STT_PROMPT_FILE=/opt/voice/stt_prompt.txt
+# Requests are saved as WAVs only while this folder exists (first 20)
+Environment=STT_DEBUG_DIR=/opt/voice/stt-debug
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

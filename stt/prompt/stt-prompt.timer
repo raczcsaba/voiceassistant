@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily Whisper vocabulary prompt refresh
+
+[Timer]
+# after voice_brain refreshes /config/voice_titles.json (about 04:43)
+OnCalendar=*-*-* 05:15
+RandomizedDelaySec=10min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
