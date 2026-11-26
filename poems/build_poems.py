@@ -76,7 +76,8 @@ def poem_from(page, poet):
     lines = [l for l in text.splitlines() if l]
     if not MIN_LINES <= len(lines) <= MAX_LINES or not looks_like_verse(text):
         return None
-    year = re.search(r"\b(1[5-9]\d\d)\b", re.search(r"megjegyzés\s*=([^\n]*)", wikitext).group(1) if "megjegyzés" in wikitext else "")
+    note = re.search(r"megjegyzés\s*=([^\n]*)", wikitext)
+    year = re.search(r"\b(1[5-9]\d\d)\b", note.group(1)) if note else None
     return {"author": poet, "title": page["title"].split(" (")[0], "year": year.group(1) if year else None,
             "text": text, "source": "https://hu.wikisource.org/wiki/" + urllib.parse.quote(page["title"].replace(" ", "_"))}
 

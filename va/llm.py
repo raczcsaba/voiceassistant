@@ -84,7 +84,7 @@ def flat_to_call(c):
     t, tgt, act, val = c.get("tool"), c.get("target"), c.get("action"), c.get("value")
     if t == "control_light":
         a = {"room": tgt, "action": "off" if act == "off" else "on"}
-        if val is not None:
+        if val is not None and a["action"] == "on":  # a brightness only makes sense when switching on
             a["brightness"] = val
         return {"name": t, "args": a}
     if t == "set_climate":
