@@ -15,7 +15,10 @@ import math
 import pathlib
 import time
 
-import mlx.core as mx
+try:
+    import mlx.core as mx
+except ImportError:  # not on Apple Silicon (e.g. CI): the decoding logic stays importable and testable
+    mx = None
 
 from .common import COVERS, DEVICES, ROOMS, SCENES
 
@@ -156,7 +159,7 @@ class MlxCommandParser:
         while True:
             if node.word is not None and not node.kids:
                 return node.word, pending
-            if len(node.kids) == 1:  # forced: jump forward without running the model
+            if node.word is None and len(node.kids) == 1:  # forced: jump forward without running the model
                 t, node = next(iter(node.kids.items()))
                 pending.append(t)
                 continue
