@@ -1,23 +1,45 @@
-# Voice home assistant: low-latency local voice control (Mac, English)
+# Voice home assistant: local voice control in under 100 ms
 
-Goal: **end of speech → smart-home action well under 1 s**, fully local, on an 8 GB M2.
+[![CI](https://github.com/raczcsaba/voiceassistant/actions/workflows/ci.yml/badge.svg)](https://github.com/raczcsaba/voiceassistant/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 
-**Result: 82 ms median / 126 ms worst case (STT + command parsing), 16/16 correct on the test set,
-45/48 (94%) on unseen phrasings, 0/26 false triggers on chatter/fillers/unknown devices,
-~1.3 GB RAM for the whole assistant including TTS.**
+A hands-free voice assistant for Home Assistant that runs entirely on an 8 GB M2 MacBook: no cloud, no GPU server.
+An always-open microphone feeds a voice activity detector, a 110M-parameter speech recognizer and a 350M-parameter
+language model fine-tuned to turn a sentence into one smart-home command, which is then sent to the Home Assistant
+REST API. The first prototype (Whisper + a 4 GB LLM via Ollama) needed 5–11 s per command because the models didn't
+fit in memory; this version takes about 85 ms from the end of speech to the action.
+
+**Highlights** (measured with `bench.py` / `eval_nlu.py`, raw results in [`results/`](results/))
+
+- **85 ms median, 124 ms worst case** from end of speech to tool call (Parakeet 110M STT 43 ms + parser 38 ms), 16/16 correct on the test set
+- **45/48 (94%)** on held-out phrasings the model never saw, **0/26 false triggers** on chatter, fillers and unknown devices
+- **~1.3 GB RAM** for the whole assistant including TTS, so it runs alongside normal use on an 8 GB machine
+- **Constrained decoding over a token trie** ([`va/fastnlu.py`](va/fastnlu.py)): the model can only emit valid
+  tool/target/action/value combinations, and tokens with a single possible continuation are appended without a forward pass
+- **LoRA fine-tune** of IBM Granite 4.0 350M on 4,000 synthetic commands ([`train/gen_data.py`](train/gen_data.py)),
+  ~3 min on the M2; held-out accuracy went from 78% (few-shot) to 94%
+- **Confidence gate**: commands below 0.5 are ignored, unlocking the front door needs 0.9
+- Benchmark harness that compares STT backends (Parakeet, Moonshine, Whisper, Groq, Deepgram) and command parsers (MLX, Ollama, Groq, Claude) on accuracy and latency
+
+**Tech stack:** Python · MLX / mlx-lm · Parakeet (parakeet-mlx) · Silero VAD (ONNX Runtime) · Piper TTS ·
+Home Assistant REST and WebSocket APIs · pytest · ruff · GitHub Actions. Also JavaScript (Lovelace cards, Canvas/WebGL)
+and a small Java Android app.
+
+```mermaid
+flowchart LR
+    mic["Microphone<br/>always open, 32 ms frames"] --> vad["Silero VAD<br/>~10 ms + 300 ms silence wait"]
+    vad --> asr["Parakeet TDT-CTC 110M<br/>MLX, ~43 ms"]
+    asr --> nlu["Granite 350M, LoRA, 8-bit<br/>constrained decoding, ~38 ms"]
+    nlu -->|"light bedroom on 50"| gate{"confidence<br/>gate"}
+    gate -->|accepted| ha["Home Assistant<br/>REST API"]
+    gate -->|rejected| drop["ignored, logged"]
+    ha --> tts["Piper TTS<br/>pre-rendered replies"]
+```
 
 Not every sound is a command: the parser is trained with ~25% "do nothing" examples (fillers, chatter, half
-sentences, unknown devices) and a confidence gate rejects anything the model isn't sure about (0.5, door lock 0.9).
-Ignored input is logged but not spoken about.
-With hands-free VAD, add the 300 ms end-of-speech wait → ≈ 0.4 s from your last syllable to the action.
-
-```
-mic (always open) ─► Silero VAD ─► Parakeet 110M (MLX) ─► Granite 350M, fine-tuned, 8-bit (MLX, in-process)
-   32 ms frames        ~10 ms        ~43 ms                   ~38 ms, constrained "light bedroom on 50"
-                       +300 ms silence wait                    │
-                                                               ▼
-                                     MockHome / Home Assistant REST ─► Piper TTS (pre-rendered, ~0 ms)
-```
+sentences, unknown devices) and ignored input is logged but not spoken about. With hands-free VAD, add the 300 ms
+end-of-speech wait: about 0.4 s from your last syllable to the action.
 
 ## Setup
 
@@ -95,6 +117,17 @@ whisper-tiny.en 41 ms (10%), parakeet-v2 116 ms. TTS: Piper lessac-low 46 ms, ma
 
 Caveat: test audio is synthetic (macOS voice). Record your own voice with `python record.py` and rerun
 `python bench.py` — it uses `audio/en/rec/` automatically.
+
+## Tests
+
+The pure-logic parts run anywhere, without MLX, models, a microphone or Home Assistant: constrained decoding
+(with a fake tokenizer and a scripted model), the HA service mapping (mocked HTTP), VAD endpointing (scripted
+probabilities), scoring and the poem builder.
+
+```bash
+pip install -e ".[dev]"
+ruff check . && pytest
+```
 
 ## Retraining the command model (e.g. new rooms/devices)
 
