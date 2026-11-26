@@ -21,16 +21,39 @@ class Speaker:
             except Exception as err:
                 _LOGGER.warning("announce failed on %s: %r", satellite, err)
 
+    async def ask(self, satellite, text):
+        """Speak a question and let the satellite listen for the answer (no wake word); announce if that fails."""
+        async with self._lock:
+            _LOGGER.info("ask %s: %s", satellite, text)
+            try:
+                await self.ha.start_conversation(satellite, text)
+                return True
+            except Exception as err:
+                _LOGGER.warning("start_conversation failed on %s: %r; announcing instead", satellite, err)
+            try:
+                await self.ha.announce(satellite, text)
+            except Exception as err:
+                _LOGGER.warning("announce failed on %s: %r", satellite, err)
+            return False
+
 
 class DryRunSpeaker:
     def __init__(self):
         self.spoken = []
+        self.asked = []
         self._lock = asyncio.Lock()
 
     async def say(self, satellite, text):
         async with self._lock:
             self.spoken.append((time.monotonic(), satellite, text))
             _LOGGER.info("[dry-run] would announce on %s: %s", satellite, text)
+
+    async def ask(self, satellite, text):
+        async with self._lock:
+            self.spoken.append((time.monotonic(), satellite, text))
+            self.asked.append(text)
+            _LOGGER.info("[dry-run] would start_conversation on %s: %s", satellite, text)
+        return True
 
 
 class StatusGate:

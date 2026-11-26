@@ -70,6 +70,48 @@ LIKE_TETSZIK = re.compile(r"^(?:ez\s+|nagyon\s+|ez\s+nagyon\s+|ez\s+a\s+szam\s+)
 QUESTION = re.compile(r"\b(?:mi|mit|milyen|melyik|hogy|hogyan|miert|mikor|kinek|ki|what|which|why|how)\b")
 
 
+# Answers to a question the worker asked ("Letöltsem a Dűne második részét?"): the whole utterance is a yes, a no,
+# a maybe or a short "do it / something else". Alone these are never device commands.
+_YES = (r"igen|igen kerem|igen kerlek|igen legyszi|ja|jah|aha|ok|oke|okes|okay|persze|hogyne|nana|jo|jo lesz|rendben|"
+        r"mehet|mehet kerem|csinald|csinald meg|toltsd le|toltsed le|toltsd|toltsd le kerlek|kerem|kerlek|legyszi|"
+        r"yes|yeah|yep|sure|go ahead|do it|please")
+_NO = r"nem|nem kell|nem kerem|nem koszonom|ne|ne toltsd le|inkabb ne|inkabb nem|hagyjuk|hagyd|nem most|no|nope|no thanks"
+_OTHER = (r"mast|valami mast|egy masikat|masikat|a masikat|inkabb mast|talan|lehet|majd|kesobb|majd kesobb|mindegy|"
+          r"nem tudom|maybe|later|something else")
+ANSWER = re.compile(rf"^(?:(?:{_YES}|{_NO}|{_OTHER})(?:\s+(?:koszi|koszonom|kerem|kerlek|thanks|please))?\s*)+$")
+ANSWER_WORDS = 6  # shorter utterances may be answers too: ask the worker whether a question is open
+
+
+def is_answer(text):
+    """The whole utterance is a yes / no / maybe / "mehet" / "töltsd le" / "mást"."""
+    p = _squash(text)
+    return bool(p) and bool(ANSWER.match(p))
+
+
+def is_answer_like(text):
+    """Worth asking the worker whether it is waiting for an answer: a yes / no or any short utterance."""
+    return is_answer(text) or 0 < len(_squash(text).split()) < ANSWER_WORDS
+
+
+# "halkítsd le harmincra", "hangerő 40 százalékra": a level to set, not an amount to change by
+_NUMBER = r"(?:\d+|egy|ket|ketto|harom|negy|ot|hat|het|nyolc|kilenc|tiz|husz|harminc|negyven|otven|hatvan|hetven|nyolcvan|kilencven|szaz)\w*"
+VOLUME_TO = re.compile(rf"\bszazalek(?:ra|ig)\b|\b{_NUMBER}(?:ra|re|ig)\b|\b\d+\s(?:ra|re|ig)\b|\bto\s+\d+")
+
+
+def pending_for(reply, satellite):
+    """The worker's /pending reply says it waits for an answer from this satellite (or from any satellite)."""
+    if not isinstance(reply, dict) or reply.get("pending") is not True:
+        return False
+    if isinstance(reply.get("expires_in"), (int, float)) and reply["expires_in"] <= 0:
+        return False
+    wanted = reply.get("satellite")
+    return not wanted or not satellite or wanted == satellite
+
+
+def volume_absolute(text):
+    return bool(VOLUME_TO.search(_squash(text)))
+
+
 def has_claude(text):
     return bool(CLAUDE.search(_squash(text)))
 
@@ -80,6 +122,18 @@ def is_cancel(text):
 
 def has_stop_word(text):
     return bool(STOP_WORD.search(_squash(text)))
+
+
+def stops_playback(text):
+    """A stop word that is about the playback too, not only "mégse" (never mind)."""
+    p = _squash(text)
+    return has_stop_word(p) and p not in ("megse", "megsem")
+
+
+def is_bare_stop(text):
+    """Just a stop word ("állj", "elég", "stop", "hagyd abba"), with nothing saying what to stop."""
+    p = _squash(text)
+    return has_stop_word(p) and len(p.split()) <= 3 and not re.search(r"\b(?:zene\w*|film\w*|tv\w*|teve\w*|szam\w*)\b", p)
 
 
 def is_like(text):
@@ -125,11 +179,15 @@ def playlist_name(text):
 def route(text):
     """The deterministic decision, or None to ask the local model.
 
-    Returns one of: ("cancel", ""), ("claude", reason), ("like", ""), ("save_to_playlist", name)."""
+    Returns one of: ("cancel", ""), ("claude", reason), ("like", ""), ("save_to_playlist", name).
+    conversation.py asks the worker about an open question (is_answer_like) before this."""
     if is_cancel(text):
         return "cancel", ""
     if has_claude(text):
         return "claude", "keyword"
+    if is_answer(text):
+        # A bare "igen" / "nem" with no open question: never a device action, let Claude make sense of it
+        return "claude", "answer"
     if is_playlist_request(text):
         return "claude", "playlist"
     if is_save(text):

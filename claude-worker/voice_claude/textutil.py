@@ -41,3 +41,33 @@ def for_speech(text, limit=700):
         end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
         text = cut[: end + 1] if end > limit // 2 else cut.rstrip() + "…"
     return text
+
+
+_SENTENCE_END = re.compile(r"(?<=[.!?…])\s+")
+
+
+def shorten(text, limit=180, keep_question=False):
+    """Keep whole sentences from the start within limit characters (at least the first one, cut at a word if it
+    alone is too long). keep_question: if the answer ended with a question that got cut, keep that question too."""
+    text = (text or "").strip()
+    if len(text) <= limit:
+        return text
+    sentences = [s for s in _SENTENCE_END.split(text) if s]
+    question = sentences[-1] if keep_question and sentences[-1].endswith("?") else None
+    budget = limit - (len(question) + 1 if question else 0)
+    out = []
+    for s in sentences:
+        if s is question:
+            break
+        if len(" ".join(out + [s])) > budget:
+            break
+        out.append(s)
+    if not out:
+        first = sentences[0]
+        if question and first is question:
+            first, question = question, None
+        cut = first[: max(budget, 40)].rsplit(" ", 1)[0].rstrip(",;:–- ")
+        out = [cut + ("" if cut.endswith((".", "!", "?")) else ".")]
+    if question:
+        out.append(question)
+    return " ".join(out)

@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 from . import prompt
 from .speaker import StatusGate
-from .textutil import for_speech
+from .textutil import for_speech, shorten
 from .tools import TOOL_DEFS
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +49,8 @@ class Task:
         self.web_searches = 0
         self.no_web = False
         self.pending_status = None
+        self.pending_context = None  # an open download proposal this request answers (see seerr.py)
+        self.asked = False  # the final answer is a yes/no question (spoken with start_conversation)
         self.done_event = None
         self.final = None
         self.outcome = None
@@ -96,6 +98,7 @@ class Runner:
         """Run to completion; speaks the answer (or an apology). Re-raises CancelledError."""
         satellite = self.satellite_for(task)
         self._last_satellite = satellite
+        self.tools.task_ctx = {"satellite": satellite, "ask": False}
         scfg = self.cfg["status"]
         gate = StatusGate(scfg["min_gap_s"], scfg["quiet_after_ack_s"], scfg["max_per_task"], clock=self.clock)
         done = asyncio.Event()
@@ -108,11 +111,15 @@ class Runner:
                 final = await asyncio.wait_for(self._loop(task, gate, satellite), max(0.1, remaining))
             except TimeoutError:
                 raise TaskAborted("timeout") from None
-            task.final = for_speech(final) or "Kész."
+            task.asked = bool(self.tools.task_ctx.get("ask"))
+            task.final = self.finish_text(final, task.asked)
             task.outcome = "ok"
             done.set()
             idle.cancel()
-            await self.speaker.say(satellite, task.final)
+            if task.asked and hasattr(self.speaker, "ask"):
+                await self.speaker.ask(satellite, task.final)
+            else:
+                await self.speaker.say(satellite, task.final)
         except TaskAborted as err:
             done.set()
             idle.cancel()
@@ -135,6 +142,14 @@ class Runner:
             idle.cancel()
         return task
 
+    def finish_text(self, text, asked=False):
+        """TTS-safe and short: whole sentences within final_max_chars; a proposal always ends with its question."""
+        limit = self.cfg["anthropic"].get("final_max_chars", 180)
+        text = shorten(for_speech(text), limit, keep_question=asked) or "Kész."
+        if asked and not text.endswith("?"):
+            text += " Letöltsem?"
+        return text
+
     async def _idle_notice(self, task, gate, satellite, done):
         """One generic 'still working' line if nothing was said for idle_notice_s."""
         wait = self.cfg["status"]["idle_notice_s"]
@@ -150,7 +165,11 @@ class Runner:
             await asyncio.sleep(min(left, 1.0))
 
     async def _status(self, task, gate, satellite, text):
-        text = for_speech(text, limit=120)
+        words = for_speech(text, limit=120).split()
+        max_words = self.cfg["status"].get("max_words", 6)
+        text = " ".join(words[:max_words]).rstrip(",;:")
+        if len(words) > max_words and not text.endswith((".", "!", "?")):
+            text += "."
         if not text:
             return {"spoken": False, "reason": "empty"}
         reason = gate.check()
@@ -200,7 +219,8 @@ class Runner:
             _LOGGER.warning("player list failed: %r", err)
             players = []
         now = datetime.now(self.tz).strftime("%Y-%m-%d %H:%M, %A")
-        messages = [{"role": "user", "content": prompt.user_turn(task.text, now, satellite, task.source, players)}]
+        messages = [{"role": "user", "content": prompt.user_turn(task.text, now, satellite, task.source, players,
+                                                                    task.pending_context)}]
 
         while True:
             if task.turns >= limits["max_turns"]:

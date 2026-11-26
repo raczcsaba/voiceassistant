@@ -47,7 +47,8 @@
       "claude-haiku-5-5": "web_search_20250305"
     },
     "max_web_searches": 3,
-    "web_search_location": null
+    "web_search_location": null,
+    "final_max_chars": 180
   },
   "limits": {
     "max_turns": 12,
@@ -58,9 +59,10 @@
   "status": {
     "min_gap_s": 6,
     "quiet_after_ack_s": 4,
-    "max_per_task": 4,
+    "max_per_task": 2,
     "idle_notice_s": 15,
-    "idle_text": "Még dolgozom rajta."
+    "idle_text": "Még dolgozom rajta.",
+    "max_words": 6
   },
   "home_control": {
     "weather_entity": "weather.YOUR_WEATHER",
@@ -220,6 +222,17 @@
       "Satellites: assist_satellite.YOUR_SATELLITE = the tablet; which device \"itt\" means.",
       "The default speaker, what each script does, words like \"képeim\" or \"vibe\"."
     ]
+  },
+  "seerr": {
+    "url": "http://SEERR_HOST:5055",
+    "key_file": "seerr.key",
+    "user_id": 1,
+    "notify_service": "notify.mobile_app_YOUR_PHONE",
+    "poll_minutes": 5,
+    "pending_seconds": 180,
+    "quiet_start": 22,
+    "quiet_end": 8,
+    "dry_run": false
   },
   "catalogue": {
     "refresh_hours": 6,

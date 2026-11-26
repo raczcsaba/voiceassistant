@@ -53,6 +53,10 @@ async def main(cfg_path, rebuild):
         await timed("match_playlist(forza, editable)", tools.match_playlist("forza", True))
         await timed("match_playlist(rok, editable)", tools.match_playlist("rok", True))
         await timed("match_playlist(blabla, editable)", tools.match_playlist("blabla", True))
+        await timed("get_queue(Pi)", tools.get_queue("Pi", 5))
+        if tools.seerr is not None:
+            await timed("seerr_search(Dűne második rész)", tools.seerr_search("Dűne második rész"))
+            await timed("seerr_search(Severance, tv)", tools.seerr_search("Severance", "tv"))
         await timed("search_movies(vándorló palota)", tools.search_movies("vándorló palota"))
         await timed("search_movies(Frieren)", tools.search_movies("Frieren"))
 
@@ -62,6 +66,11 @@ async def main(cfg_path, rebuild):
         await timed("create_playlist(existing)", tools.create_playlist("rock"))
         await timed("add_to_playlist", tools.add_to_playlist("forza", ["library://track/1"]))
         await timed("like(current)", tools.like(None, None))
+        await timed("edit_queue(remove next 2, shuffle)", tools.edit_queue([{"op": "remove", "count": 2},
+                                                                           {"op": "shuffle", "value": True}], "Pi"))
+        if tools.seerr is not None:
+            tools.task_ctx = {"satellite": "assist_satellite.dry_run"}
+            await timed("request_download(Dune Part Two, dry-run)", tools.request_download(693134, "movie"))
         films = data.get("films") or []
         if films:
             await timed("play_movie", tools.play_movie(films[0]["ref"]))

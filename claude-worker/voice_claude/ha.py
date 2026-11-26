@@ -45,6 +45,12 @@ class HomeAssistant:
                                        {"entity_id": satellite, "message": message, "preannounce": False},
                                        timeout=timeout)
 
+    async def start_conversation(self, satellite, message, timeout=60):
+        """Ask on the satellite and listen for the answer without a wake word."""
+        return await self.call_service("assist_satellite", "start_conversation",
+                                       {"entity_id": satellite, "start_message": message, "preannounce": False},
+                                       timeout=timeout)
+
     async def get(self, path, timeout=20):
         return await self._request("GET", path, timeout=timeout)
 

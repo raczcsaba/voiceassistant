@@ -8,8 +8,11 @@ import asyncio
 import json
 import logging
 
+from rapidfuzz import fuzz
+
 from . import catalogue as cat
 from . import home
+from . import seerr as seerr_mod
 from .textutil import best_matches, norm
 
 _LOGGER = logging.getLogger(__name__)
@@ -117,6 +120,10 @@ class Tools:
         self.writes = []  # (kind, target, args) of every write, real or dry-run
         self.background = set()
         self.on_background_error = None  # async callback(text) for failures after the tool returned
+        self.seerr = None  # seerr.Seerr, when configured
+        self.pending = None  # seerr.Pending
+        self.tracker = None  # seerr.Tracker
+        self.task_ctx = {}  # per task: satellite, ask (a yes/no question was set up)
 
     # ---------------------------------------------------------------- writes
     async def _write(self, command, **args):
@@ -126,6 +133,17 @@ class Tools:
             return None
         _LOGGER.info("MA command %s %s", command, json.dumps(args, ensure_ascii=False))
         return await self.ma.call(command, **args)
+
+    async def _write_many(self, command, arg_list):
+        """The same MA command many times (e.g. deleting queue items one by one); logged as one write."""
+        self.writes.append(("ma", command, {"count": len(arg_list), "first": arg_list[0] if arg_list else None}))
+        if self.dry_run:
+            _LOGGER.info("[dry-run] would send MA command %s x%d, first %s", command, len(arg_list),
+                         json.dumps(arg_list[:1], ensure_ascii=False))
+            return
+        _LOGGER.info("MA command %s x%d", command, len(arg_list))
+        for args in arg_list:
+            await self.ma.call(command, **args)
 
     async def _ha_write(self, kind, target, data):
         """kind "service" (target = domain.service) or "post" (target = HA path)."""
@@ -262,6 +280,145 @@ class Tools:
         level = await self._set_volume(p, level)
         return {"ok": True, "player": p["name"], "volume_pct": level}
 
+    # ---------------------------------------------------------------- queue editing
+    async def _queue_state(self, player=None, limit=500):
+        """(player, queue dict, [items from the current one on, each with its absolute index])."""
+        p = await self.players.resolve(player)
+        queue = await self.ma.call("player_queues/get_active_queue", player_id=p["queue"] or p["entity_id"]) or {}
+        queue_id = queue.get("queue_id") or p["queue"] or p["entity_id"]
+        queue["queue_id"] = queue_id
+        start = queue.get("current_index") or 0
+        raw = await self.ma.call("player_queues/items", queue_id=queue_id, limit=limit, offset=start) or []
+        items = []
+        for n, it in enumerate(raw):
+            media = it.get("media_item") or {}
+            artists = ", ".join(a.get("name") for a in media.get("artists") or [] if a.get("name"))
+            items.append({"index": start + n, "id": it.get("queue_item_id"),
+                          "title": media.get("name") or it.get("name"), "artist": artists})
+        return p, queue, items
+
+    @staticmethod
+    def _locked_until(queue):
+        """Items up to this index can't be moved or removed (playing or already buffered by the player)."""
+        cur = queue.get("current_index")
+        buf = queue.get("index_in_buffer")
+        return max(x for x in (cur, buf, -1) if x is not None)
+
+    async def get_queue(self, player=None, limit=10):
+        limit = max(1, min(int(limit or 10), 50))
+        p, queue, items = await self._queue_state(player, limit + 1)
+        cur = queue.get("current_index")
+        locked = self._locked_until(queue)
+        current = items[0] if items and cur is not None and items[0]["index"] == cur else None
+        upcoming = items[1:] if current else items
+        out = {"player": p["name"], "state": p["state"], "shuffle": queue.get("shuffle_enabled"),
+               "repeat": queue.get("repeat_mode"),
+               "current": {k: current[k] for k in ("title", "artist", "id")} if current else None,
+               "upcoming": [{"pos": n + 1, **u, **({"locked": True} if u["index"] <= locked else {})}
+                            for n, u in enumerate(upcoming[:limit])],
+               "upcoming_total": max(0, int(queue.get("items") or 0) - (cur + 1 if cur is not None else 0))}
+        for u in out["upcoming"]:
+            u.pop("index", None)
+        return out
+
+    @staticmethod
+    def _matches(item, text):
+        wanted = norm(text)
+        if not wanted:
+            return False
+        hay = norm(f"{item.get('artist') or ''} {item.get('title') or ''}")
+        return wanted in hay or fuzz.partial_ratio(wanted, norm(item.get("artist") or "")) >= 90
+
+    async def edit_queue(self, ops, player=None):
+        if isinstance(ops, dict):
+            ops = [ops]
+        if not ops:
+            raise ToolError("no ops given")
+        done, problems = [], []
+        p = None
+        for op in ops:
+            kind = (op or {}).get("op")
+            p, queue, items = await self._queue_state(player)
+            qid = queue["queue_id"]
+            locked = self._locked_until(queue)
+            editable = [i for i in items if i["index"] > locked]
+            by_id = {i["id"]: i for i in items}
+            if kind == "remove":
+                targets = []
+                for qi in op.get("ids") or ([op["id"]] if op.get("id") else []):
+                    if qi in by_id and by_id[qi]["index"] > locked:
+                        targets.append(by_id[qi])
+                    else:
+                        problems.append(f"remove: {qi} is not an upcoming, editable item")
+                if op.get("match"):
+                    hits = [i for i in editable if self._matches(i, op["match"])]
+                    if not hits:
+                        problems.append(f"remove: nothing upcoming matches {op['match']!r}")
+                    targets += [h for h in hits if h not in targets]
+                if op.get("count"):
+                    if items[1:2] and items[1]["index"] <= locked:
+                        problems.append("the very next track is already buffered by the player and can't be removed")
+                    targets += [i for i in editable[: int(op["count"])] if i not in targets]
+                # Highest index first, so the remaining indexes stay valid
+                for t in sorted(targets, key=lambda i: -i["index"]):
+                    await self._write("player_queues/delete_item", queue_id=qid, item_id_or_index=t["id"])
+                if targets:
+                    done.append(f"removed {len(targets)}: " + "; ".join(f"{t['artist']} - {t['title']}" for t in targets[:8]))
+            elif kind in ("move_next", "move"):
+                item = by_id.get(op.get("id")) if op.get("id") else None
+                if item is None and op.get("match"):
+                    item = next((i for i in editable if self._matches(i, op["match"])), None)
+                if item is None or item["index"] <= locked:
+                    problems.append(f"{kind}: item not found among the upcoming items")
+                    continue
+                if kind == "move_next":
+                    target = locked + 1
+                else:
+                    pos = max(1, int(op.get("position") or 1))
+                    target = max(locked + 1, (queue.get("current_index") or 0) + pos)
+                shift = target - item["index"]
+                if shift:
+                    await self._write("player_queues/move_item", queue_id=qid, queue_item_id=item["id"], pos_shift=shift)
+                done.append(f"moved {item['title']} to upcoming position {target - (queue.get('current_index') or 0)}")
+            elif kind == "clear_upcoming":
+                total = int(queue.get("items") or 0)
+                start = locked + 1
+                # MA has no "clear after current"; delete by index from the end
+                indexes = list(range(total - 1, start - 1, -1))
+                await self._write_many("player_queues/delete_item",
+                                       [{"queue_id": qid, "item_id_or_index": i} for i in indexes])
+                done.append(f"cleared {len(indexes)} upcoming items")
+            elif kind == "shuffle":
+                await self._write("player_queues/shuffle", queue_id=qid, shuffle_enabled=bool(op.get("value", True)))
+                done.append(f"shuffle {'on' if op.get('value', True) else 'off'}")
+            elif kind == "repeat":
+                mode = str(op.get("value") or "all").lower()
+                if mode not in ("off", "one", "all"):
+                    problems.append("repeat: value must be off, one or all")
+                    continue
+                await self._write("player_queues/repeat", queue_id=qid, repeat_mode=mode)
+                done.append(f"repeat {mode}")
+            elif kind == "play":
+                item = by_id.get(op.get("id")) if op.get("id") else None
+                if item is None and op.get("match"):
+                    item = next((i for i in items[1:] if self._matches(i, op["match"])), None)
+                if item is None:
+                    problems.append("play: item not found in the queue")
+                    continue
+                await self._write("player_queues/play_index", queue_id=qid, index=item["id"])
+                done.append(f"playing {item['title']}")
+            elif kind in ("next", "previous"):
+                await self._write(f"player_queues/{kind}", queue_id=qid)
+                done.append(kind)
+            else:
+                problems.append(f"unknown op {kind!r}")
+        if not done and problems:
+            raise ToolError("; ".join(problems))
+        out = {"ok": True, "player": p["name"] if p else None, "done": done}
+        if problems:
+            out["problems"] = problems
+        return out
+
     # ---------------------------------------------------------------- home control (allowlist)
     def _readable_ids(self):
         return {e for ids in self.readable.values() for e in ids}
@@ -345,6 +502,8 @@ class Tools:
                                         "Pass params as an object. Actions:\n" + home.describe(self.actions),
                          "input_schema": _schema({"action_id": {"type": "string", "enum": list(self.actions)},
                                                   "params": {"type": "object"}}, ["action_id"])})
+        if self.seerr is not None:
+            defs += SEERR_DEFS
         # report_status stays last
         defs.sort(key=lambda d: d["name"] == "report_status")
         return defs
@@ -458,6 +617,76 @@ class Tools:
             if self.on_background_error:
                 await self.on_background_error(f"Nem sikerült elindítani a tévén: {label}.")
 
+    # ---------------------------------------------------------------- Seerr: find and download films and series
+    def _need_seerr(self):
+        if self.seerr is None:
+            raise ToolError("downloading is not configured")
+
+    async def seerr_search(self, query, media_type=None):
+        self._need_seerr()
+        found = await self.seerr.search(query, limit=8)
+        if media_type in ("movie", "tv"):
+            found = [f for f in found if f["type"] == media_type]
+        return {"results": found[:5]} if found else {"results": [], "note": "nothing found in Seerr/TMDB"}
+
+    async def _checked(self, tmdb_id, media_type):
+        self._need_seerr()
+        if media_type not in ("movie", "tv"):
+            raise ToolError("media_type must be movie or tv")
+        try:
+            details = await self.seerr.details(media_type, int(tmdb_id))
+        except (TypeError, ValueError):
+            raise ToolError("tmdb_id must be a number") from None
+        info = seerr_mod.compact({**details, "mediaType": media_type})
+        return details, info
+
+    async def propose_download(self, tmdb_id, media_type, seasons=None):
+        details, info = await self._checked(tmdb_id, media_type)
+        if info["status"] in ("available", "partially_available"):
+            return {"ok": False, "status": info["status"], "title": info["title"],
+                    "note": "already downloaded: check search_movies and offer to play it instead"}
+        if info["status"] in ("pending", "processing") or info.get("requested"):
+            return {"ok": False, "status": info["status"], "title": info["title"],
+                    "note": "already requested and on its way; just say so"}
+        if media_type == "tv":
+            seasons = [int(s) for s in seasons] if seasons else seerr_mod.default_seasons(details)
+        else:
+            seasons = None
+        satellite = self.task_ctx.get("satellite")
+        self.pending.set(kind="seerr", tmdb_id=int(tmdb_id), type=media_type, title=info["title"], year=info["year"],
+                         seasons=seasons, satellite=satellite)
+        self.task_ctx["ask"] = True
+        out = {"ok": True, "title": info["title"], "year": info["year"], "expires_in_s": self.pending.ttl,
+               "note": "end your reply with the question (e.g. 'Letöltsem?'); the satellite then listens for the answer"}
+        if seasons:
+            out["seasons"] = seasons
+        return out
+
+    async def request_download(self, tmdb_id, media_type, seasons=None):
+        return await self.do_request(tmdb_id, media_type, seasons, self.task_ctx.get("satellite"))
+
+    async def do_request(self, tmdb_id, media_type, seasons, satellite):
+        """Request in Seerr (or log it in dry-run) and track it until it is downloaded."""
+        details, info = await self._checked(tmdb_id, media_type)
+        if self.pending:
+            self.pending.clear()
+        if info["status"] in ("available", "partially_available", "pending", "processing"):
+            return {"ok": False, "status": info["status"], "title": info["title"],
+                    "note": "nothing requested: it is already available or on its way"}
+        if media_type == "tv":
+            seasons = [int(s) for s in seasons] if seasons else seerr_mod.default_seasons(details)
+        else:
+            seasons = None
+        result = await self.seerr.request(media_type, int(tmdb_id), seasons)
+        self.writes.append(("seerr", "/request", self.seerr.posts[-1]))
+        if self.tracker and not self.seerr.dry_run:
+            self.tracker.add(int(tmdb_id), media_type, info["title"], satellite, seasons, (result or {}).get("id"))
+        out = {"ok": True, "title": info["title"], "year": info["year"],
+               "request_status": seerr_mod.REQUEST_STATUS.get((result or {}).get("status"), "sent")}
+        if seasons:
+            out["seasons"] = seasons
+        return out
+
     # ---------------------------------------------------------------- dispatch
     async def run(self, name, args):
         """Run a client tool; returns (json_text, is_error)."""
@@ -500,6 +729,24 @@ TOOL_DEFS = [
                               "radio_mode": {"type": "boolean"}, "shuffle": {"type": "boolean"},
                               "volume": {"type": "integer", "description": "optional volume in percent (0-100), set before playing; \"negyvenes hangerő\" = 40"}},
                              ["uris"])},
+    {"name": "get_queue", "description": "The playing queue of a player: the current track and the upcoming ones "
+                                       "(pos 1 = next) with their queue item id. locked items are already buffered and can't be edited.",
+     "input_schema": _schema({"player": PLAYER, "limit": {"type": "integer", "description": "upcoming items, default 10, max 50"}})},
+    {"name": "edit_queue", "description": "Edit the queue that is already playing, without replacing it. ops run in order; "
+                                        "each is an object with op and its fields:\n"
+                                        "- remove: ids (queue item ids) and/or match (artist or title text, removes every upcoming match) "
+                                        "and/or count (the next N upcoming items)\n"
+                                        "- move_next: id or match -> plays right after the current track\n"
+                                        "- move: id or match, position (1 = next)\n"
+                                        "- clear_upcoming: removes everything after the current track (which keeps playing)\n"
+                                        "- shuffle: value true/false; repeat: value off/one/all\n"
+                                        "- play: id or match -> jump to that item now; next; previous",
+     "input_schema": _schema({"ops": {"type": "array", "items": {"type": "object", "properties": {
+         "op": {"type": "string", "enum": ["remove", "move_next", "move", "clear_upcoming", "shuffle", "repeat", "play",
+                                           "next", "previous"]},
+         "id": {"type": "string"}, "ids": {"type": "array", "items": {"type": "string"}}, "match": {"type": "string"},
+         "count": {"type": "integer"}, "position": {"type": "integer"},
+         "value": {"type": ["boolean", "string"]}}, "required": ["op"]}}, "player": PLAYER}, ["ops"])},
     {"name": "set_volume", "description": "Set a music player's volume in percent (0-100).",
      "input_schema": _schema({"level": {"type": "integer"}, "player": PLAYER}, ["level"])},
     {"name": "create_playlist", "description": "Create a new, empty own playlist on Tidal. Returns its id; then use add_to_playlist.",
@@ -515,5 +762,22 @@ TOOL_DEFS = [
     {"name": "report_status", "description": "Say a very short Hungarian progress line aloud while you work (e.g. 'Keresem a számokat.'). Rate limited; may be skipped.",
      "input_schema": _schema({"text": {"type": "string"}}, ["text"])},
 ]
+SEERR_DEFS = [
+    {"name": "seerr_search", "description": "Search films and series that can be downloaded (Seerr/TMDB, Hungarian titles). "
+                                          "status: available (downloaded), processing/pending (on its way), not_requested.",
+     "input_schema": _schema({"query": {"type": "string"}, "media_type": {"type": "string", "enum": ["movie", "tv"]}},
+                             ["query"])},
+    {"name": "propose_download", "description": "Offer ONE title for download and wait for the user's yes/no. Your final "
+                                              "reply must then be one short sentence ending with a question like "
+                                              "'Letöltsem?'; it is spoken and the satellite listens for the answer.",
+     "input_schema": _schema({"tmdb_id": {"type": "integer"}, "media_type": {"type": "string", "enum": ["movie", "tv"]},
+                              "seasons": {"type": "array", "items": {"type": "integer"},
+                                          "description": "series only; default all seasons, or season 1 if it has more than 3"}},
+                             ["tmdb_id", "media_type"])},
+    {"name": "request_download", "description": "Request the download now (only when the user explicitly said to download "
+                                              "this title, or approved your proposal).",
+     "input_schema": _schema({"tmdb_id": {"type": "integer"}, "media_type": {"type": "string", "enum": ["movie", "tv"]},
+                              "seasons": {"type": "array", "items": {"type": "integer"}}}, ["tmdb_id", "media_type"])},
+]
 HOME_TOOLS = {"ha_get_states", "get_weather_forecast", "ha_action"}
-TOOL_NAMES = ({t["name"] for t in TOOL_DEFS} | HOME_TOOLS) - {"report_status"}
+TOOL_NAMES = ({t["name"] for t in TOOL_DEFS + SEERR_DEFS} | HOME_TOOLS) - {"report_status"}

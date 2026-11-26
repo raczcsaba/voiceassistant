@@ -126,3 +126,65 @@ def test_device_control_and_music_go_to_the_model(text):
 def test_plain_keeps_length():
     text = "Tedd a NYÁRI-listába, ő!"
     assert len(router.plain(text)) == len(text)
+
+
+# --------------------------------------------------------------------------------------------- answers
+@pytest.mark.parametrize("text", [
+    "Igen", "igen, kérem", "Nem.", "nem kell", "mehet", "Töltsd le!", "mást", "valami mást", "talán", "oké",
+    "persze", "inkább ne", "igen köszi", "yes", "no thanks",
+])
+def test_answers(text):
+    assert router.is_answer(text)
+    assert router.is_answer_like(text)
+    # Never a device action on its own: with no open question it goes to Claude, not to the local model
+    assert router.route(text) == ("claude", "answer")
+
+
+@pytest.mark.parametrize("text", ["kapcsold le a dekor lámpát", "nem tudom a címét de az a sci-fi a homokról",
+                                  "igen és kapcsold fel a lámpát", "állj", "töltsd le a Dűnét"])
+def test_not_bare_answers(text):
+    assert not router.is_answer(text)
+
+
+@pytest.mark.parametrize(("text", "like"), [
+    ("igen", True), ("a második részt is", True), ("kapcsold le a dekor lámpát", True),
+    ("töltsd le a Dűne második részét is, meg az elsőt", False),
+    ("Indítsen nekem valami playlistet ilyen elektronikus metal stílusban", False), ("", False),
+])
+def test_answer_like(text, like):
+    assert router.is_answer_like(text) is like
+
+
+SAT = "assist_satellite.kiosk_tablet_assist_satellite"
+
+
+@pytest.mark.parametrize(("reply", "satellite", "routed"), [
+    ({"pending": True, "kind": "seerr", "title": "Dűne", "satellite": SAT, "expires_in": 40}, SAT, True),
+    ({"pending": True, "kind": "seerr", "title": "Dűne", "satellite": None, "expires_in": 40}, SAT, True),
+    ({"pending": True, "satellite": SAT, "expires_in": 40}, None, True),         # typed in, no satellite
+    ({"pending": True, "satellite": "assist_satellite.other", "expires_in": 40}, SAT, False),
+    ({"pending": True, "satellite": SAT, "expires_in": 0}, SAT, False),
+    ({"pending": False, "kind": None, "title": None, "satellite": None, "expires_in": 0}, SAT, False),
+    (None, SAT, False),                                                           # worker down or no /pending
+    ({"pending": "yes"}, SAT, False),
+])
+def test_pending_for(reply, satellite, routed):
+    assert router.pending_for(reply, satellite) is routed
+
+
+@pytest.mark.parametrize(("text", "absolute"), [
+    ("hangosíts húsz százalékot", False), ("halkítsd le harmincra", True), ("hangerő negyven százalékra", True),
+    ("hangosítsd fel", False), ("halkíts tíz százalékot", False), ("állítsd a hangerőt 30-ra", True),
+])
+def test_volume_absolute(text, absolute):
+    assert router.volume_absolute(text) is absolute
+
+
+@pytest.mark.parametrize(("text", "bare", "playback"), [
+    ("Állj!", True, True), ("elég", True, True), ("hagyd abba", True, True), ("stop", True, True),
+    ("állítsd le a zenét", False, True), ("mégse", True, False), ("Claude állj", True, True),
+    ("kapcsold le a lámpát", False, False),
+])
+def test_stop_words(text, bare, playback):
+    assert router.is_bare_stop(text) is bare
+    assert router.stops_playback(text) is playback

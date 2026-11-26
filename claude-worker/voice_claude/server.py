@@ -11,6 +11,7 @@ from aiohttp import web
 
 from . import catalogue as cat
 from . import config as config_mod
+from . import seerr as seerr_mod
 from .budget import Ledger, Pricing
 from .ha import HomeAssistant
 from .jellyfin import Jellyfin
@@ -39,6 +40,9 @@ class Service:
         self.catalogue = catalogue
         self.has_key = has_key
         self.current = None  # (Task, asyncio.Task)
+        self.pending = getattr(tools, "pending", None)
+        self.background = set()
+        self.speaker = None
         self.tasks_log = os.path.join(cfg["data_dir"], "tasks.jsonl")
 
     @property
@@ -71,6 +75,69 @@ class Service:
         _LOGGER.info("task %s %s in %.1fs, %d turns, $%.4f, tools=%s, final=%r", task.id, task.outcome,
                      entry["seconds"], task.turns, task.cost, [t["name"] for t in task.tools_called], task.final)
 
+    def log_entry(self, entry):
+        with open(self.tasks_log, "a", encoding="utf-8") as f:
+            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+    async def _approve(self, item, text):
+        """Request the proposed title. Returns what voice_brain says (its ack); finishes in the background if slow."""
+        title = item["title"]
+        job = asyncio.create_task(self.tools.do_request(item["tmdb_id"], item["type"], item.get("seasons"),
+                                                        item.get("satellite")))
+        self.background.add(job)
+        job.add_done_callback(self.background.discard)
+
+        def outcome(result):
+            if result.get("ok"):
+                return f"Rendben, kértem a(z) {title} letöltését."
+            if result.get("status") == "available":
+                return f"A(z) {title} már megvan, elindíthatom."
+            return f"A(z) {title} már úton van."
+
+        try:
+            say = outcome(await asyncio.wait_for(asyncio.shield(job), 1.5))
+        except TimeoutError:
+            async def later():
+                try:
+                    msg = outcome(await job)
+                except Exception as err:
+                    _LOGGER.warning("Seerr request for %s failed: %r", title, err)
+                    msg = f"Bocsánat, nem sikerült kérni a(z) {title} letöltését."
+                if self.speaker and item.get("satellite"):
+                    await self.speaker.say(item["satellite"], msg)
+            follow = asyncio.create_task(later())
+            self.background.add(follow)
+            follow.add_done_callback(self.background.discard)
+            say = "Kérem a letöltést."
+        except Exception as err:
+            _LOGGER.warning("Seerr request for %s failed: %r", title, err)
+            say = f"Bocsánat, nem sikerült kérni a(z) {title} letöltését."
+        self.log_entry({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "text": text, "pending_answer": "yes",
+                        "title": title, "tmdb_id": item["tmdb_id"], "final": say})
+        return say
+
+    async def _answer_pending(self, text):
+        """A reply to the open proposal: (json response or None to run Claude, pending context for Claude)."""
+        item = self.pending.get() if self.pending else None
+        if not item:
+            return None, None
+        kind = seerr_mod.answer_kind(text)
+        _LOGGER.info("reply to the proposal of %s: %r -> %s", item["title"], text, kind)
+        if kind == "yes":
+            self.pending.clear()
+            say = await self._approve(item, text)
+            return web.json_response({"accepted": True, "ack": say, "task_id": None, "pending_answer": "yes"}), None
+        if kind == "no":
+            self.pending.clear()
+            say = "Rendben, nem töltöm le."
+            self.log_entry({"ts": time.strftime("%Y-%m-%dT%H:%M:%S"), "text": text, "pending_answer": "no",
+                            "title": item["title"], "final": say})
+            return web.json_response({"accepted": True, "ack": say, "task_id": None, "pending_answer": "no"}), None
+        # "another" or unclear: Claude handles it, with the proposal as context
+        context = {**item, "answer": kind or "unclear", "proposed": list(self.pending.proposed)}
+        self.pending.clear(forget=kind != "another")
+        return None, context
+
     async def _run(self, task):
         runner = self.runner_factory()
         task.model = runner.model
@@ -97,12 +164,16 @@ class Service:
             return self.refuse("no_key")
         if self.ledger.over_limit():
             return self.refuse("budget")
+        reply, pending_context = await self._answer_pending(text)
+        if reply is not None:
+            return reply
         if self.busy:
             _LOGGER.info("new task while busy: cancelling the running one")
             await self.cancel_current()
             if self.busy:
                 return self.refuse("busy")
         task = Task(text, body.get("satellite"), body.get("device_id"), body.get("source"), body.get("lang") or "hu")
+        task.pending_context = pending_context
         _LOGGER.info("task %s accepted from %s (%s): %s", task.id, task.source, task.satellite, text)
         self.current = (task, asyncio.create_task(self._run(task)))
         return web.json_response({"accepted": True, "ack": ACK, "task_id": task.id})
@@ -153,6 +224,12 @@ class Service:
             _LOGGER.exception("quick %s failed", action)
             return web.json_response({"ok": False, "say": "Ezt most nem sikerült megcsinálni.", "error": repr(err)[:200]})
 
+    async def handle_pending(self, request):
+        """For voice_brain: is a yes/no question open (so the next utterance goes here)? Memory only, fast."""
+        if self.pending is None:
+            return web.json_response({"pending": False, "kind": None, "title": None, "satellite": None, "expires_in": 0})
+        return web.json_response(self.pending.status())
+
     async def handle_health(self, request):
         return web.json_response({"ok": True, "has_key": bool(self.has_key()), "model": self.cfg["anthropic"]["model"],
                                   "busy": self.busy, "dry_run": self.tools.dry_run,
@@ -167,6 +244,7 @@ class Service:
         app = web.Application()
         app.add_routes([web.post("/task", self.handle_task), web.post("/cancel", self.handle_cancel),
                         web.post("/quick", self.handle_quick), web.get("/health", self.handle_health),
+                        web.get("/pending", self.handle_pending),
                         web.get("/budget", self.handle_budget)])
         return app
 
@@ -194,6 +272,31 @@ def build(cfg, dry_run=False, client=None, session=None):
                               lambda: cat.build(ma, jf, cfg["catalogue"]), cfg["catalogue"]["refresh_hours"])
     tools = Tools(ma, jf, ha, catalogue, cfg, dry_run=dry_run)
     speaker = DryRunSpeaker() if dry_run else Speaker(ha)
+    scfg = cfg.get("seerr") or {}
+    seerr_key = config_mod.secret(cfg, scfg.get("key_file")) if scfg.get("url") else None
+    if seerr_key:
+        tools.seerr = seerr_mod.Seerr(scfg["url"], seerr_key, session, scfg.get("user_id"),
+                                      dry_run=dry_run or scfg.get("dry_run", False))
+        tools.pending = seerr_mod.Pending(scfg.get("pending_seconds", 180))
+
+        async def notify(item, text):
+            """Download finished: speak on the satellite that asked, push to the phone, refresh the catalogue."""
+            satellite = item.get("satellite") or hcfg.get("default_satellite")
+            if satellite:
+                await speaker.say(satellite, text)
+            if scfg.get("notify_service"):
+                try:
+                    await tools._ha_write("service", scfg["notify_service"], {"title": "Letöltés kész", "message": text})
+                except Exception as err:
+                    _LOGGER.warning("phone notification failed: %r", err)
+            try:
+                await catalogue.refresh(force=True)
+            except Exception as err:
+                _LOGGER.warning("catalogue refresh after download failed: %r", err)
+
+        tools.tracker = seerr_mod.Tracker(os.path.join(cfg["data_dir"], "requests.json"), tools.seerr, notify,
+                                          cfg.get("timezone", "Europe/Budapest"),
+                                          (scfg.get("quiet_start", 22), scfg.get("quiet_end", 8)))
     ledger = Ledger(os.path.join(cfg["data_dir"], "ledger.jsonl"), Pricing(cfg["pricing"]),
                     cfg["limits"]["monthly_usd"], cfg.get("timezone", "Europe/Budapest"))
 
@@ -240,13 +343,18 @@ def main():
         app = service.app()
         refresher = None
 
+        poller = None
+
         async def on_start(_app):
-            nonlocal refresher
+            nonlocal refresher, poller
             refresher = asyncio.create_task(_refresher(service.catalogue, cfg["catalogue"]["refresh_hours"]))
+            if service.tools.tracker is not None:
+                poller = asyncio.create_task(service.tools.tracker.run((cfg.get("seerr") or {}).get("poll_minutes", 5) * 60))
 
         async def on_stop(_app):
-            if refresher:
-                refresher.cancel()
+            for job in (refresher, poller):
+                if job:
+                    job.cancel()
             await service.cancel_current()
             await cleanup()
 
