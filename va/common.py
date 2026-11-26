@@ -126,11 +126,38 @@ def norm_text(s):
     return re.sub(r"\s+", " ", s).strip()
 
 
+# Fixed confirmations (pre-rendered by the TTS at startup, so playback starts immediately).
+REPLY = {
+    "control_light": "Okay.",
+    "set_climate": "Temperature set.",
+    "control_cover": "Okay.",
+    "control_device": "Done.",
+    "activate_scene": "Scene on.",
+}
+
+
+def spoken_reply(call, out):
+    """What to say after executing `call`, given the home backend's result `out`."""
+    if not out.get("ok", True):
+        return "Sorry, I couldn't do that."
+    if call["name"] != "get_state":
+        return REPLY.get(call["name"], "Okay.")
+    attr = (call.get("args") or {}).get("attribute")
+    value = out.get(attr)
+    if value is None:
+        return "Sorry, I don't know."
+    if attr == "temperature":
+        return f"It's {value} degrees."
+    if attr == "humidity":
+        return f"Humidity is {value} percent."
+    return f"It's {value}."
+
+
 class MockHome:
     """Stand-in for Home Assistant: just records/prints the action."""
 
     def execute(self, call):
         name, a = call["name"], call.get("args") or {}
         if name == "get_state":
-            return {"target": a.get("target"), "temperature": 21.5, "humidity": 45, "state": "on"}
+            return {"ok": True, "target": a.get("target"), "temperature": 21.5, "humidity": 45, "state": "on"}
         return {"ok": True, "done": name, **a}

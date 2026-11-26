@@ -46,7 +46,12 @@ class HomeAssistant:
         if n == "activate_scene":
             return self._svc("scene", "turn_on", {"entity_id": self.e["scenes"][a["scene"]]})
         if n == "get_state":
-            ent = self.e.get("sensors", {}).get(a["target"], {}).get(a["attribute"]) or self.e["devices"].get(a["target"])
-            st = self.s.get(f"{self.url}/api/states/{ent}", timeout=5).json()
-            return {"target": a["target"], a["attribute"]: st.get("state"), "temperature": st.get("state")}
+            ent = self.e.get("sensors", {}).get(a["target"], {}).get(a["attribute"])
+            if ent is None and a["attribute"] == "state":
+                ent = self.e["devices"].get(a["target"])
+            if ent is None:
+                return {"ok": False, "error": f"no entity for {a['attribute']} of {a['target']}"}
+            r = self.s.get(f"{self.url}/api/states/{ent}", timeout=5)
+            r.raise_for_status()
+            return {"ok": True, "target": a["target"], a["attribute"]: r.json().get("state")}
         return {"ok": False, "error": f"unknown tool {n}"}

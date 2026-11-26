@@ -11,16 +11,8 @@ import time
 
 from va import llm as llm_mod
 from va import stt as stt_mod
-from va.common import PROFILES
+from va.common import PROFILES, REPLY, spoken_reply
 from va.home import HomeAssistant, MockHome
-
-REPLY = {
-    "control_light": "Okay.",
-    "set_climate": "Temperature set.",
-    "control_cover": "Okay.",
-    "control_device": "Done.",
-    "activate_scene": "Scene on.",
-}
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--stt", default="parakeet-110m")
@@ -65,9 +57,12 @@ try:
         say = ""  # not a command (chatter, "hmm", unknown device, low confidence): stay silent
         outs = []
         for c in r["calls"]:
-            out = home.execute(c)
+            try:
+                out = home.execute(c)
+            except Exception as e:  # HA down / unknown entity: report it, keep listening
+                out = {"ok": False, "error": str(e)}
             outs.append(out)
-            say = f"It's {out.get('temperature')} degrees." if c["name"] == "get_state" else REPLY.get(c["name"], "Okay.")
+            say = spoken_reply(c, out)
         t3 = time.perf_counter()
         if tts and say:
             mic.mute(tts.say(say) + 0.3)  # don't hear ourselves
