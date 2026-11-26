@@ -115,12 +115,13 @@ YES = {"igen", "ja", "jaja", "aha", "mehet", "jo", "oke", "okes", "ok", "okay", 
        "nana", "legyen", "toltsd", "toltsed", "csinald", "hajra", "igenis", "szuper", "johet", "yes"}
 NO = {"nem", "ne", "nee", "nemkoszi", "megse", "hagyd", "hagyjuk", "no", "nope"}
 ANOTHER = {"mast", "masikat", "masik", "inkabb", "valami", "mas"}
+UNSURE = {"nem tudom", "talan", "lehet", "majd", "kesobb", "majd kesobb", "mindegy", "nem tudom meg"}
 
 
 def answer_kind(text):
     """'yes', 'no', 'another' (reject and propose a different one) or None (unclear: let Claude decide)."""
     words = norm(text).split()
-    if not words:
+    if not words or " ".join(words) in UNSURE or " ".join(words[:2]) == "nem tudom":
         return None
     if any(w in ANOTHER for w in words) and (words[0] in NO or "inkabb" in words or words[0] in ANOTHER
                                              or "mast" in words or "masikat" in words):

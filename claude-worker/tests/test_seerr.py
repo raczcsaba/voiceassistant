@@ -198,7 +198,8 @@ class AnswerTests(unittest.TestCase):
             self.assertEqual(answer_kind(t), "no", t)
         for t in ("mást", "inkább mást", "nem, inkább valami mást", "másikat kérek"):
             self.assertEqual(answer_kind(t), "another", t)
-        for t in ("kapcsold le a lámpát", "milyen hosszú a film", "", "igen de előbb nézd meg mennyi hely van"):
+        for t in ("kapcsold le a lámpát", "milyen hosszú a film", "", "igen de előbb nézd meg mennyi hely van",
+                  "nem tudom", "Nem tudom, talán", "talán", "majd később", "mindegy"):
             self.assertIsNone(answer_kind(t), t)
 
     def test_expiry(self):
