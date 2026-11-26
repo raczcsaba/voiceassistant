@@ -98,6 +98,25 @@ Set a hard limit on the API key's workspace in the Claude Console as well; the l
 Each task (text, tools called, duration, cost, final answer, outcome) goes to `data/tasks.jsonl` and to the log
 (journald under systemd).
 
+## Home control
+
+Claude can control the home only through a fixed allowlist in `config.json` (`home_control`, template in
+`config.example.json`; logic in `voice_claude/home.py`):
+
+- `ha_get_states(group | entity_ids)`: compact states of the entities listed under `readable` (lights, TV,
+  speakers, tablet, phone, weather, sun, presence), plus `read_endpoints` such as the Jellyfin now-playing view.
+- `get_weather_forecast(kind)`: `weather.get_forecasts` on `weather_entity` (read-only).
+- `ha_action(action_id, params)`: one of the `actions`. Each has a description (Hungarian/English) that goes into
+  the tool definition, a fixed `service` or `post` path with fixed `data`, and typed `params` (enum, entity list,
+  integer range) that are validated before the call. Unknown actions or params are errors Claude sees.
+- `set_volume(level, player)` and `play_music(..., volume)`: Music Assistant player volume in percent
+  ("negyvenes hangerő" = 40), set before playback starts.
+
+Whatever the config says, anything touching the intruder alarm, restarts, reloads, deletions, backups or shell
+commands is dropped at load time. Every write is logged (`HA write ...`, or `[dry-run] would call HA ...`).
+`home_control.manual` lines are appended to the system prompt as a house manual (device names, rooms, satellites,
+what the scripts do).
+
 ## Setup
 
 Needs Python 3.11+, a Music Assistant server (tested with 2.9) with a long-lived token, Home Assistant with a

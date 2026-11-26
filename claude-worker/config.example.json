@@ -62,6 +62,165 @@
     "idle_notice_s": 15,
     "idle_text": "Még dolgozom rajta."
   },
+  "home_control": {
+    "weather_entity": "weather.YOUR_WEATHER",
+    "read_endpoints": {
+      "jellyfin_now": {
+        "path": "/api/jellyfin_panel/now?device=tv",
+        "group": "tv"
+      }
+    },
+    "readable": {
+      "lights": [
+        "switch.YOUR_LAMP",
+        "light.YOUR_DIMMABLE_LIGHT"
+      ],
+      "tv": [
+        "media_player.YOUR_TV"
+      ],
+      "speakers": [
+        "media_player.YOUR_DEFAULT_PLAYER"
+      ],
+      "tablet": [
+        "light.YOUR_TABLET_screen",
+        "switch.YOUR_TABLET_screensaver_active",
+        "input_select.YOUR_SAVER_STYLE"
+      ],
+      "weather": [
+        "weather.YOUR_WEATHER",
+        "sun.sun"
+      ],
+      "presence": [
+        "person.YOUR_PERSON"
+      ]
+    },
+    "actions": {
+      "tv_on": {
+        "description": "Turns the TV on (A tévé bekapcsolása).",
+        "service": "script.turn_on",
+        "data": {
+          "entity_id": "script.YOUR_TV_WAKE"
+        }
+      },
+      "tv_off": {
+        "description": "Turns the TV off.",
+        "service": "media_player.turn_off",
+        "data": {
+          "entity_id": "media_player.YOUR_TV"
+        }
+      },
+      "tv_film_control": {
+        "description": "Control the Jellyfin film on the TV.",
+        "post": "/api/jellyfin_panel/control",
+        "data": {
+          "device": "tv"
+        },
+        "params": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "playpause",
+              "stop",
+              "rewind",
+              "forward"
+            ],
+            "required": true
+          }
+        }
+      },
+      "lights_on": {
+        "description": "Lamps on: switch.YOUR_LAMP = LED lámpa, ...",
+        "service": "homeassistant.turn_on",
+        "params": {
+          "entities": {
+            "type": "entities",
+            "enum": [
+              "switch.YOUR_LAMP",
+              "light.YOUR_DIMMABLE_LIGHT"
+            ],
+            "required": true,
+            "as": "entity_id"
+          }
+        }
+      },
+      "lights_off": {
+        "description": "Lamps off (same entities as lights_on).",
+        "service": "homeassistant.turn_off",
+        "params": {
+          "entities": {
+            "type": "entities",
+            "enum": [
+              "switch.YOUR_LAMP",
+              "light.YOUR_DIMMABLE_LIGHT"
+            ],
+            "required": true,
+            "as": "entity_id"
+          }
+        }
+      },
+      "light_brightness": {
+        "description": "Brightness of a dimmable light.",
+        "service": "light.turn_on",
+        "params": {
+          "entities": {
+            "type": "entities",
+            "enum": [
+              "light.YOUR_DIMMABLE_LIGHT"
+            ],
+            "required": true,
+            "as": "entity_id"
+          },
+          "brightness": {
+            "type": "integer",
+            "min": 1,
+            "max": 100,
+            "as": "brightness_pct",
+            "required": true
+          }
+        }
+      },
+      "tablet_photos": {
+        "description": "Photo slideshow (the user's own pictures) on the tablet: \"indítsd el a képeimet\".",
+        "service": "script.turn_on",
+        "data": {
+          "entity_id": "script.YOUR_TABLET_SCREENSAVER",
+          "variables": {
+            "style": "Immich Photos"
+          }
+        }
+      },
+      "tablet_screensaver": {
+        "description": "Tablet screensaver with a chosen wallpaper.",
+        "service": "script.turn_on",
+        "data": {
+          "entity_id": "script.YOUR_TABLET_SCREENSAVER"
+        },
+        "params": {
+          "style": {
+            "type": "string",
+            "enum": [
+              "Immich Photos",
+              "Live Sky",
+              "Shuffle"
+            ],
+            "into": "variables"
+          }
+        }
+      },
+      "tablet_next_photo": {
+        "description": "Next photo on the tablet screensaver.",
+        "service": "button.press",
+        "data": {
+          "entity_id": "button.YOUR_TABLET_next_slide"
+        }
+      }
+    },
+    "manual": [
+      "Rooms and devices with their Hungarian names, e.g. \"dekor lámpa\" = switch.YOUR_LAMP.",
+      "Satellites: assist_satellite.YOUR_SATELLITE = the tablet; which device \"itt\" means.",
+      "The default speaker, what each script does, words like \"képeim\" or \"vibe\"."
+    ]
+  },
   "catalogue": {
     "refresh_hours": 6,
     "max_artists": 600,

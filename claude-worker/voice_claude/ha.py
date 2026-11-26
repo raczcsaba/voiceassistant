@@ -45,5 +45,14 @@ class HomeAssistant:
                                        {"entity_id": satellite, "message": message, "preannounce": False},
                                        timeout=timeout)
 
+    async def get(self, path, timeout=20):
+        return await self._request("GET", path, timeout=timeout)
+
+    async def service_response(self, domain, service, data, timeout=20):
+        """A read-only service that returns data (e.g. weather.get_forecasts)."""
+        result = await self._request("POST", f"/api/services/{domain}/{service}?return_response", json=data,
+                                     timeout=timeout)
+        return (result or {}).get("service_response") if isinstance(result, dict) else None
+
     async def post(self, path, body, timeout=90):
         return await self._request("POST", path, json=body, timeout=timeout)

@@ -42,6 +42,7 @@ DEFAULTS = {
     "limits": {"max_turns": 12, "max_seconds": 150, "max_task_usd": 0.60, "monthly_usd": 30.0},
     "status": {"min_gap_s": 6, "quiet_after_ack_s": 4, "max_per_task": 4, "idle_notice_s": 15,
                "idle_text": "Még dolgozom rajta."},
+    "home_control": {"readable": {}, "actions": {}, "read_endpoints": {}, "weather_entity": None, "manual": []},
     "catalogue": {"refresh_hours": 6, "max_artists": 600, "max_tracks": 600},
     "pricing": {
         "web_search_per_1000": 10.0,

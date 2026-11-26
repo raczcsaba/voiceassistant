@@ -1,6 +1,6 @@
-"""The local model's instructions and output schema. No Home Assistant imports, so it can be tested on its own."""
-import re
-import unicodedata
+"""The local model's instructions and output schema. No Home Assistant imports, so it can be tested on its own.
+
+like, save_to_playlist and cancel from the model are only kept when router.py's rules back them."""
 
 ACTIONS = ["on", "off", "brightness", "music", "music_only", "movie", "pause", "resume", "next", "stop",
            "volume_up", "volume_down", "like", "save_to_playlist", "cancel", "none"]
@@ -43,6 +43,7 @@ EXAMPLES = (
     'tedd fel ezt a nyári lejátszási listára -> {"a":"save_to_playlist","d":"","q":"nyári","n":0}\n'
     'rakd be ezt a számot az edzős listámba -> {"a":"save_to_playlist","d":"","q":"edzős","n":0}\n'
     'csinálj egy lejátszási listát pörgős számokból -> {"a":"none","d":"","q":"","n":0}\n'
+    'indíts el egy rock playlistet -> {"a":"music","d":"","q":"rock playlist","n":0}\n'
     'Claude állj -> {"a":"cancel","d":"","q":"","n":0}\n'
     'hagyd abba Claude -> {"a":"cancel","d":"","q":"","n":0}\n'
     'mégse -> {"a":"cancel","d":"","q":"","n":0}\n'
@@ -74,17 +75,3 @@ def schema(devices, speakers):
         "required": ["a", "d", "q", "n"],
     }
 
-
-def _plain(text):
-    text = unicodedata.normalize("NFKD", text.lower())
-    return "".join(c for c in text if not unicodedata.combining(c))
-
-
-# "Claude, stop" and friends: certain enough to skip the model. Speech-to-text may spell Claude "klód".
-_CLAUDE = r"(claude|klod|clod|klaud)"
-_STOP = r"(allj|alljon le|allitsd le|allj le|hagyd abba|fejezd be|stop|eleg)"
-CANCEL = re.compile(rf"^\W*(({_CLAUDE}\W+{_STOP})|({_STOP}\W+{_CLAUDE})|megse)\W*$")
-
-
-def is_cancel(text):
-    return bool(CANCEL.match(_plain(text)))

@@ -1,6 +1,7 @@
 """The tools Claude can call, plus the player and playlist lookups /quick shares with them.
 
-Every write goes through _write(), which in dry-run mode only logs the exact command.
+Every write goes through _write() (Music Assistant) or _ha_write() (Home Assistant), which in dry-run mode only
+log the exact command. Home Assistant writes are limited to the allowlist in config.json (see home.py).
 Results are compact JSON with trimmed fields.
 """
 import asyncio
@@ -8,6 +9,7 @@ import json
 import logging
 
 from . import catalogue as cat
+from . import home
 from .textutil import best_matches, norm
 
 _LOGGER = logging.getLogger(__name__)
@@ -110,6 +112,8 @@ class Tools:
         mcfg = cfg["music_assistant"]
         self.provider = mcfg.get("playlist_provider")
         self.players = Players(ha, mcfg.get("default_player"), mcfg.get("player_aliases"))
+        self.readable, self.actions = home.load(cfg)
+        self.home_cfg = cfg.get("home_control") or {}
         self.writes = []  # (kind, target, args) of every write, real or dry-run
         self.background = set()
         self.on_background_error = None  # async callback(text) for failures after the tool returned
@@ -122,6 +126,22 @@ class Tools:
             return None
         _LOGGER.info("MA command %s %s", command, json.dumps(args, ensure_ascii=False))
         return await self.ma.call(command, **args)
+
+    async def _ha_write(self, kind, target, data):
+        """kind "service" (target = domain.service) or "post" (target = HA path)."""
+        self.writes.append(("ha", target, data))
+        text = json.dumps(data, ensure_ascii=False)
+        if self.dry_run:
+            _LOGGER.info("[dry-run] would call HA %s %s", target, text)
+            return None
+        _LOGGER.info("HA write %s %s", target, text)
+        try:
+            if kind == "service":
+                domain, service = target.split(".", 1)
+                return await self.ha.call_service(domain, service, data, timeout=20)
+            return await self.ha.post(target, data, timeout=20)
+        except Exception as err:
+            raise ToolError(f"Home Assistant refused {target}: {str(err)[:200]}") from err
 
     # ---------------------------------------------------------------- lookups
     async def playlists(self, refresh=False):
@@ -203,7 +223,7 @@ class Tools:
                 "track": trim(item) if item else None,
                 "queue_items": (queue or {}).get("items"), "shuffle": (queue or {}).get("shuffle_enabled")}
 
-    async def play_music(self, uris, player=None, enqueue="replace", radio_mode=False, shuffle=False):
+    async def play_music(self, uris, player=None, enqueue="replace", radio_mode=False, shuffle=False, volume=None):
         if isinstance(uris, str):
             uris = [uris]
         uris = [u for u in uris or [] if isinstance(u, str) and "://" in u]
@@ -214,12 +234,120 @@ class Tools:
             raise ToolError("enqueue must be replace, next or add")
         p = await self.players.resolve(player)
         queue_id = p["queue"] or p["entity_id"]
+        if volume is not None:
+            # Before the music starts, so it doesn't blast at the old level first
+            await self._set_volume(p, volume)
         await self._write("player_queues/play_media", queue_id=queue_id, media=uris, option=option,
                           radio_mode=bool(radio_mode))
         if shuffle:
             await self._write("player_queues/shuffle", queue_id=queue_id, shuffle_enabled=True)
-        return {"ok": True, "player": p["name"], "items": len(uris), "enqueue": option,
-                "radio_mode": bool(radio_mode), "shuffle": bool(shuffle)}
+        out = {"ok": True, "player": p["name"], "items": len(uris), "enqueue": option,
+               "radio_mode": bool(radio_mode), "shuffle": bool(shuffle)}
+        if volume is not None:
+            out["volume_pct"] = int(volume)
+        return out
+
+    async def _set_volume(self, p, level):
+        try:
+            level = int(round(float(level)))
+        except (TypeError, ValueError):
+            raise ToolError("volume must be a number from 0 to 100") from None
+        if not 0 <= level <= 100:
+            raise ToolError("volume must be from 0 to 100 (percent)")
+        await self._ha_write("service", "media_player.volume_set", {"entity_id": p["entity_id"], "volume_level": level / 100})
+        return level
+
+    async def set_volume(self, level, player=None):
+        p = await self.players.resolve(player)
+        level = await self._set_volume(p, level)
+        return {"ok": True, "player": p["name"], "volume_pct": level}
+
+    # ---------------------------------------------------------------- home control (allowlist)
+    def _readable_ids(self):
+        return {e for ids in self.readable.values() for e in ids}
+
+    async def ha_get_states(self, group=None, entity_ids=None):
+        if not self.readable:
+            raise ToolError("home control is not configured")
+        if isinstance(entity_ids, str):
+            entity_ids = [entity_ids]
+        wanted = set()
+        if group:
+            if group not in self.readable:
+                raise ToolError(f"unknown group {group!r}; groups: {', '.join(self.readable)}")
+            wanted |= set(self.readable[group])
+        if entity_ids:
+            allowed = self._readable_ids()
+            refused = [e for e in entity_ids if e not in allowed]
+            if refused:
+                raise ToolError(f"not readable: {', '.join(refused)}; use a group or a listed entity")
+            wanted |= set(entity_ids)
+        if not wanted:
+            wanted = self._readable_ids()
+        states = await self.ha.states()
+        out = [home.compact_state(st) for st in states if st.get("entity_id") in wanted]
+        result = {"states": sorted(out, key=lambda x: x["id"])}
+        for name, ep in (self.home_cfg.get("read_endpoints") or {}).items():
+            if (group or None) in (None, ep.get("group")) and not entity_ids:
+                try:
+                    result[name] = await self.ha.get(ep["path"])
+                except Exception as err:
+                    result[name] = {"error": str(err)[:120]}
+        return result
+
+    async def get_weather_forecast(self, kind="daily", limit=None):
+        entity = self.home_cfg.get("weather_entity")
+        if not entity:
+            raise ToolError("no weather entity configured")
+        kind = kind if kind in ("daily", "hourly") else "daily"
+        resp = await self.ha.service_response("weather", "get_forecasts", {"entity_id": entity, "type": kind})
+        items = ((resp or {}).get(entity) or {}).get("forecast") or []
+        limit = max(1, min(int(limit or (5 if kind == "daily" else 12)), 10 if kind == "daily" else 48))
+        keep = ("datetime", "condition", "temperature", "templow", "precipitation", "precipitation_probability",
+                "wind_speed", "humidity")
+        return {"entity": entity, "type": kind,
+                "forecast": [{k: f[k] for k in keep if f.get(k) is not None} for f in items[:limit]]}
+
+    async def ha_action(self, action_id, params=None):
+        spec = self.actions.get(action_id)
+        if spec is None:
+            raise ToolError(f"unknown action {action_id!r}; allowed: {', '.join(self.actions)}")
+        try:
+            kind, target, data = home.build_call(spec, params)
+        except ValueError as err:
+            raise ToolError(str(err)) from None
+        await self._ha_write(kind, target, data)
+        # The same answer in dry-run mode, so a test run sees what a real one would (the write log tells them apart)
+        out = {"ok": True, "action": action_id}
+        if spec.get("note"):
+            out["note"] = spec["note"]
+        return out
+
+    def tool_defs(self):
+        """The tool list for this deployment: the static tools plus home control when configured."""
+        defs = list(TOOL_DEFS)
+        if self.readable:
+            defs.append({"name": "ha_get_states",
+                         "description": "Read the current state of home devices and sensors (lights, TV, tablet, phone, "
+                                        "speakers, weather, sun, presence). Groups: " + ", ".join(
+                                            f"{g} ({len(ids)})" for g, ids in self.readable.items())
+                                        + ". Omit both arguments for everything.",
+                         "input_schema": _schema({"group": {"type": "string", "enum": list(self.readable)},
+                                                  "entity_ids": {"type": "array", "items": {"type": "string"}}})})
+        if self.home_cfg.get("weather_entity"):
+            defs.append({"name": "get_weather_forecast",
+                         "description": "Weather forecast for home: daily (default, today first) or hourly.",
+                         "input_schema": _schema({"kind": {"type": "string", "enum": ["daily", "hourly"]},
+                                                  "limit": {"type": "integer"}})})
+        if self.actions:
+            defs.append({"name": "ha_action",
+                         "description": "Run one allowlisted home action (the only way to control the home). "
+                                        "Pass params as an object. Actions:\n" + home.describe(self.actions),
+                         "input_schema": _schema({"action_id": {"type": "string", "enum": list(self.actions)},
+                                                  "params": {"type": "object"}}, ["action_id"])})
+        # report_status stays last
+        defs.sort(key=lambda d: d["name"] == "report_status")
+        return defs
 
     async def create_playlist(self, name):
         name = (name or "").strip()
@@ -369,7 +497,11 @@ TOOL_DEFS = [
     {"name": "play_music", "description": "Play uris (tracks, albums, artists, playlists) on a player. enqueue: replace (default, start now), next, add. radio_mode keeps playing similar music after the items.",
      "input_schema": _schema({"uris": URIS, "player": PLAYER,
                               "enqueue": {"type": "string", "enum": ["replace", "next", "add"]},
-                              "radio_mode": {"type": "boolean"}, "shuffle": {"type": "boolean"}}, ["uris"])},
+                              "radio_mode": {"type": "boolean"}, "shuffle": {"type": "boolean"},
+                              "volume": {"type": "integer", "description": "optional volume in percent (0-100), set before playing; \"negyvenes hangerő\" = 40"}},
+                             ["uris"])},
+    {"name": "set_volume", "description": "Set a music player's volume in percent (0-100).",
+     "input_schema": _schema({"level": {"type": "integer"}, "player": PLAYER}, ["level"])},
     {"name": "create_playlist", "description": "Create a new, empty own playlist on Tidal. Returns its id; then use add_to_playlist.",
      "input_schema": _schema({"name": {"type": "string"}}, ["name"])},
     {"name": "add_to_playlist", "description": "Add tracks to one of the user's own (editable) playlists, by name or id.",
@@ -383,4 +515,5 @@ TOOL_DEFS = [
     {"name": "report_status", "description": "Say a very short Hungarian progress line aloud while you work (e.g. 'Keresem a számokat.'). Rate limited; may be skipped.",
      "input_schema": _schema({"text": {"type": "string"}}, ["text"])},
 ]
-TOOL_NAMES = {t["name"] for t in TOOL_DEFS} - {"report_status"}
+HOME_TOOLS = {"ha_get_states", "get_weather_forecast", "ha_action"}
+TOOL_NAMES = ({t["name"] for t in TOOL_DEFS} | HOME_TOOLS) - {"report_status"}

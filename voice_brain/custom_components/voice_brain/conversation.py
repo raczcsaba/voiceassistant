@@ -2,7 +2,10 @@
 
 Quick device control (lights, TV on/off, transport, volume) and like / save / cancel stay local and fast.
 Everything else (music requests, questions, unclear films) is handed to the Claude worker with the original text;
-the worker answers on the satellite itself. If the worker is down, music and films fall back to the local way."""
+the worker answers on the satellite itself. If the worker is down, music and films fall back to the local way.
+
+router.py runs first: anything naming Claude (or "Cloud", "Klód"...) and playlist requests go straight to the
+worker, and like / save / cancel only happen on explicit phrases, never on the model's guess alone."""
 import json
 import logging
 import time
@@ -17,7 +20,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import ulid
 
-from . import prompt, titles, worker
+from . import prompt, router, titles, worker
 
 _LOGGER = logging.getLogger(__name__)
 DOMAIN = "voice_brain"
@@ -266,11 +269,19 @@ class VoiceBrainAgent(conversation.ConversationEntity, conversation.AbstractConv
         cmd = None
         route = "local"
         try:
-            if prompt.is_cancel(user_input.text):
-                cmd = {"a": "cancel", "d": "", "q": "", "n": 0}
+            pre = router.route(user_input.text)
+            if pre:
+                kind, arg = pre
+                # "none" hands off to Claude; arg is the playlist name for save_to_playlist, else the rule's reason
+                cmd = {"a": "none" if kind == "claude" else kind, "d": "", "q": arg if kind == "save_to_playlist" else "",
+                       "n": 0, "rule": f"{kind} {arg}".strip()}
             else:
                 try:
                     cmd = await self._parse(user_input.text)
+                    checked = router.check_model(user_input.text, cmd["a"])
+                    if checked != cmd["a"]:
+                        # The model said like / save / cancel but the transcript doesn't back it: let Claude decide
+                        cmd = {**cmd, "a": "none", "q": "", "rule": f"model {cmd['a']} rejected"}
                 except (TimeoutError, OSError, KeyError, ValueError) as err:
                     # The local model is down: Claude may still understand it
                     _LOGGER.warning("Parse failed on %r: %r", user_input.text, err)

@@ -79,7 +79,8 @@ class Runner:
 
     def _tool_defs(self, task):
         acfg = self.cfg["anthropic"]
-        defs = [dict(t) for t in TOOL_DEFS]
+        source = self.tools.tool_defs() if hasattr(self.tools, "tool_defs") else TOOL_DEFS
+        defs = [dict(t) for t in source]
         remaining = acfg.get("max_web_searches", 3) - task.web_searches
         if remaining > 0 and not task.no_web:
             kinds = acfg.get("web_search_tool") or {}
@@ -189,7 +190,8 @@ class Runner:
         limits = self.cfg["limits"]
         catalogue = await self.catalogue.get()
         system = [
-            {"type": "text", "text": prompt.system_prompt(self.cfg["music_assistant"].get("player_hint"))},
+            {"type": "text", "text": prompt.system_prompt(self.cfg["music_assistant"].get("player_hint"),
+                                                          (self.cfg.get("home_control") or {}).get("manual"))},
             {"type": "text", "text": catalogue["text"], "cache_control": {"type": "ephemeral"}},
         ]
         try:
