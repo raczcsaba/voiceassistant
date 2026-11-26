@@ -105,7 +105,7 @@ def main():
         if pos_conf:
             q = sorted(pos_conf)
             print(f"   conf on correct commands: min {q[0]:.3f}  p10 {q[len(q) // 10]:.3f}  median {q[len(q) // 2]:.3f}")
-            print(f"   conf on negatives:        " + " ".join(f"{c:.2f}" for c in sorted(neg_conf, reverse=True)))
+            print("   conf on negatives:        " + " ".join(f"{c:.2f}" for c in sorted(neg_conf, reverse=True)))
 
     print("\n| model | commands correct | false triggers | median ms | max ms |\n|---|---|---|---|---|")
     for name, ok, fired, med, mx in sorted(rows, key=lambda r: (-r[1] + r[2])):

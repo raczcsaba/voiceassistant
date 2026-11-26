@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voiceassistant"
+version = "0.1.0"
+description = "Low-latency local voice control for Home Assistant on Apple Silicon (Parakeet ASR + fine-tuned Granite 350M on MLX)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+
+[project.optional-dependencies]
+# Runtime dependencies live in requirements.txt (macOS / Apple Silicon only).
+# The test suite needs none of the model libraries.
+dev = ["pytest>=8", "ruff>=0.6", "numpy>=2.0", "requests>=2.32"]
+
+[tool.setuptools]
+packages = ["va"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = [
+    "E501",   # long data/template lines (test sets, prompts, HA YAML) are kept on one line on purpose
+    "E741",   # short loop names like `l` for lines
+    "UP031",  # tv_vibe builds Jinja templates with %-formatting, which keeps the braces readable
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["va"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "poems"]
+addopts = "-q"

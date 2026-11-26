@@ -5,7 +5,7 @@ import wave
 
 import numpy as np
 
-from va.listen import Listener, SR
+from va.listen import SR, Listener
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recordings")
 PHRASES = """Kapcsold fel a LED lámpát.

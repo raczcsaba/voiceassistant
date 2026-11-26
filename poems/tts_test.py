@@ -11,6 +11,7 @@ import time
 import numpy as np
 import soundfile as sf
 import torch
+
 ROOT = os.environ.get("AI_ROOT", "/opt/ai")  # model + sample folder on the GPU box
 
 OUT = f"{ROOT}/samples"
@@ -54,6 +55,7 @@ def omni_directed():
     and the elderly deep voice reads a reference sentence for Higgs to clone."""
     import json
     import re
+
     from omnivoice import OmniVoice
     model = OmniVoice.from_pretrained("k2-fsa/OmniVoice", device_map="cuda:0", dtype=torch.float16)
     voice = OMNI_VOICES["omni_deep_old"]

@@ -3,13 +3,13 @@
 
     python tts_score.py $AI_ROOT/samples/*.wav     (on the GPU box, uses the voice assistant's Whisper model)
 """
-import re
+import os
 import subprocess
 import sys
 
 import numpy as np
 import soundfile as sf
-import os
+
 ROOT = os.environ.get("AI_ROOT", "/opt/ai")  # model + sample folder on the GPU box
 
 # A second copy of the voice assistant's Whisper server, started without its 8 s limit for this test

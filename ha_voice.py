@@ -39,7 +39,10 @@ async def pipeline_ids(ws):
 async def run_pipeline(ws, msg_id, pcm, speak, pipeline=None):
     """Send one utterance. Returns a dict of timings in ms, measured from the end of the audio."""
     start = time.perf_counter()
-    since = lambda: (time.perf_counter() - start) * 1000
+
+    def since():
+        return (time.perf_counter() - start) * 1000
+
     await ws.send(json.dumps({
         "id": msg_id, "type": "assist_pipeline/run", "start_stage": "stt",
         "end_stage": "tts" if speak else "intent", "input": {"sample_rate": 16000},

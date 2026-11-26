@@ -1,4 +1,6 @@
-import json, os, sys
+import json
+import os
+
 pool = [{"i": p["i"], "d": p["d"], "t": p["t"].strip()} for p in json.load(open("pool.json"))]
 # Your Android TV integration entity (the ADB one), e.g. TV_ADB_ENTITY=media_player.android_tv_xxx
 ADB = os.environ.get("TV_ADB_ENTITY", "media_player.android_tv")

@@ -101,7 +101,7 @@ def main():
         print(f"\n[STT] {be.name}: loading...", flush=True)
         _, t_load = timed(be.load)
         lat, hyps = {}, {}
-        for tid, text, *_, audio in clips:
+        for tid, _text, *_, audio in clips:
             times = []
             for _ in range(a.repeats):
                 hyp, t = timed(be.transcribe, audio)
@@ -134,7 +134,7 @@ def main():
             print(f"  {tid} {ms(out['ref'][tid]['lat']):>5}ms {'OK ' if ok else 'BAD'} {r['calls'] or r['text'][:80]}", flush=True)
         for sname, s in res["stt"].items():
             e = {}
-            for tid, text, exp_n, exp_a, _ in clips:
+            for tid, _text, exp_n, exp_a, _ in clips:
                 r, t = timed(be.run, s["hyp"][tid])
                 e[tid] = {"llm": t, "stt": s["lat"][tid], "ok": score_call(r["calls"], exp_n, exp_a)}
             out["e2e"][sname] = e
